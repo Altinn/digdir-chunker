@@ -1,10 +1,10 @@
-## marker-service
+# digdir-chunker
 
 This application provides REST API endpoints for converting PDF and other documents to paginated and chunked Markdown.
 
 The service takes a URL to a document as input and returns a document ID which can be used as a parameter for polling the conversion status and retrieving the converted document when it has been processed.
 
-### Development
+## Development
 
 Start the service:
 
@@ -18,17 +18,23 @@ Run database migrations:
 docker compose exec app php artisan migrate
 ```
 
-### Rest API documentation
+### Other common commands
 
-API documentation is automatically generated and published at `/docs/api`.
+Restart the queue (required after code changes that affect jobs)
 
-#### Other common commands
+```
+docker compose exec app php artisan queue:restart
+```
 
 Reset the database (delete tables and run migrations again)
 
 ```
 docker compose exec app php artisan migrate:refresh
 ```
+
+## Rest API documentation
+
+API documentation is automatically generated and published at `/docs/api`.
 
 ### Configuration
 

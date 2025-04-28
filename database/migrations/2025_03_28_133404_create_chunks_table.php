@@ -19,7 +19,6 @@ return new class extends Migration
             $table->text('text')->nullable();
             $table->smallInteger('chunk_number')->nullable();
             $table->smallInteger('page_number')->nullable();
-            // $table->vector('embedding', 1024);
             $table->timestamps();
         });
 

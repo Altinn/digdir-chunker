@@ -1,7 +1,7 @@
 services:
   app:
     image: jkaninda/laravel-php-fpm:latest
-    container_name: php-fpm
+    container_name: digdir-chunker-app
     restart: unless-stopped
     user: www-data # For production
     volumes:
@@ -10,7 +10,7 @@ services:
       - default
   nginx:
      image: jkaninda/nginx-fpm:alpine
-     container_name: nginx-server
+     container_name: digdir-chunker-nginx-server
      restart: unless-stopped
      ports:
       - 80:80
@@ -19,11 +19,12 @@ services:
      environment:
        - DOCUMENT_ROOT=/var/www/html/public
        - CLIENT_MAX_BODY_SIZE=1024M
-       - PHP_FPM_HOST=php-fpm:9000
+       - PHP_FPM_HOST=app:9000
         
      networks:
       - default
   mariadb:
+    container_name: digdir-chunker-mariadb
     env_file:
       - .env
     image: mariadb:11.7

@@ -13,8 +13,12 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('task_id')->index();
             $table->text('url');
             $table->string('sha256')->nullable();
+            $table->integer('size')->nullable();
+            $table->mediumText('markdown')->nullable();
+            $table->mediumText('html')->nullable();
             $table->timestamps();
         });
     }

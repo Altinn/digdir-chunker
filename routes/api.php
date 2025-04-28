@@ -1,9 +1,14 @@
 <?php
 
-use App\Http\Controllers\DocumentController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/chunk', [DocumentController::class, 'chunk']);
+Route::prefix('v1')->group(function () {
 
-Route::get('/search', [DocumentController::class, 'search']);
+    Route::prefix('task')->group(function () {
+
+        Route::post('parse', [TaskController::class, 'create']);
+        Route::get('{task}', [TaskController::class, 'show']);
+
+    });
+});

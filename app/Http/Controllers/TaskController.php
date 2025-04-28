@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Resources\TaskResource;
+use App\Jobs\ChunkFile;
+use App\Jobs\ConvertFileToMarkdown;
+use App\Models\File;
+use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
+
+class TaskController extends Controller
+{
+    /**
+     * Create a new task
+     */
+    public function create(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            "url" => "required|string",
+        ]);
+
+        if ( ! isset($validated['url']) )
+        {
+            return response()->json([
+                'message' => 'Missing or invalid URL',
+            ], 422);
+        }
+
+        // Create a Task and an associated File
+        $task = Task::create();
+        $task->chunking_method = config('tasks.default_chunking_method');
+        $task->backend = config('tasks.default_conversion_backend');
+        $task->status = 'Starting';
+        $task->save();
+
+        $file = new File(['url' => $validated['url']]);
+        $task->file()->save($file);
+
+        $content = file_get_contents($file->url);
+
+        $file->size = strlen($content);
+
+        $file->sha256 = hash('sha256', $content);
+        $file->save();
+
+        // Dispatch jobs to process the file
+        Bus::chain([
+            new ConvertFileToMarkdown($file),
+            new ChunkFile($file),
+        ])->dispatch();
+
+        return new TaskResource($task);
+    }
+
+    /**
+     * Get a task by UUID
+     */
+    public function show(Task $task)
+    {
+        return new TaskResource($task);
+    }
+}

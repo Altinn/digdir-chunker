@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Models\File;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Log;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class ConvertFileToMarkdown implements ShouldQueue
 {
@@ -25,8 +27,16 @@ class ConvertFileToMarkdown implements ShouldQueue
      */
     public function handle(): void
     {
-        $file = $this->file;
+        $directory = (new TemporaryDirectory())->create();
+        $file_path = $directory->path(basename($this->file->url));
 
-        $output = shell_exec("marker_single {$file->path} --paginate_output --output_ --disable_image_extraction");
+        file_put_contents($file_path, file_get_contents($this->file->url));
+
+        $output = shell_exec("source /opt/marker/bin/activate && marker_single {$file_path} --output_dir {$directory->path($this->file->sha256)} --paginate_output --disable_image_extraction");
+
+        Log::info($directory->path($this->file->sha256));
+
+        // $directory->delete();
+        
     }
 }
