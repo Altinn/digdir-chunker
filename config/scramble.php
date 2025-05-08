@@ -24,12 +24,12 @@ return [
         /*
          * API version.
          */
-        'version' => env('API_VERSION', '0.0.1'),
+        'version' => env('API_VERSION', '1.0.0'),
 
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => '',
+        'description' => 'The digdir-chunker API provides endpoints for chunking and converting files into markdown format. It allows users to upload files, process them, and retrieve the results in a structured manner. The API is designed to handle various file types and provides options for customization during the conversion process.',
     ],
 
     /*
@@ -96,7 +96,7 @@ return [
 
     'middleware' => [
         'web',
-        RestrictedDocsAccess::class,
+        // RestrictedDocsAccess::class,
     ],
 
     'extensions' => [],

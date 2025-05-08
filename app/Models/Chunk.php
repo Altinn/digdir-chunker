@@ -10,10 +10,13 @@ class Chunk extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'page_numbers' => 'array',
+    ];
+
     public static function boot()
     {
         parent::boot();
-
     }
 
     /*

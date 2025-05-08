@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TaskStatus;
 use App\Http\Resources\TaskResource;
 use App\Jobs\ChunkFile;
 use App\Jobs\ConvertFileToMarkdown;
 use App\Models\File;
 use App\Models\Task;
+use Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
 
@@ -33,13 +35,20 @@ class TaskController extends Controller
         $task = Task::create();
         $task->chunking_method = config('tasks.default_chunking_method');
         $task->backend = config('tasks.default_conversion_backend');
-        $task->status = 'Starting';
+        $task->status = TaskStatus::Starting;
         $task->save();
 
         $file = new File(['url' => $validated['url']]);
         $task->file()->save($file);
 
-        $content = file_get_contents($file->url);
+        $response = Http::get($file->url);
+        if ($response->failed()) {
+            return response()->json([
+                'message' => 'Failed to download file',
+            ], 422);
+        }
+
+        $content = $response->body();
 
         $file->size = strlen($content);
 

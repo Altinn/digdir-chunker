@@ -18,7 +18,7 @@ class ChunkResource extends JsonResource
             'id' => $this->id,
             'type' => $this->type,
             'text' => $this->text,
-            'page_number' => $this->page_number,
+            'page_numbers' => $this->page_numbers,
             'chunk_number' => $this->chunk_number,
         ];
     }

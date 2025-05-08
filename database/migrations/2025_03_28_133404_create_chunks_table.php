@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('file_id')->nullable();
             $table->string('type')->default('paragraph')->nullable();
             $table->text('text')->nullable();
-            $table->smallInteger('chunk_number')->nullable();
-            $table->smallInteger('page_number')->nullable();
+            $table->integer('chunk_number')->nullable();
+            $table->json('page_numbers')->nullable();
             $table->timestamps();
         });
 

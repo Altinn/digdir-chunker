@@ -27,8 +27,8 @@ class TaskResource extends JsonResource
                 'delete_at' => $this->delete_at,
                 'file' => new FileResource($this->file),
             ],
-            'links' => [
-                // 'self' => url()
+            'links' => [ 
+                'self' => route('task.show', $this->uuid),
             ],
         ];
     }

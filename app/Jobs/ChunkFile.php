@@ -2,11 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Enums\TaskStatus;
 use App\Models\Chunk;
 use App\Models\File;
 use App\Services\ChunkerService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Carbon\Carbon;
 
 class ChunkFile implements ShouldQueue
 {
@@ -38,9 +40,13 @@ class ChunkFile implements ShouldQueue
                 'text' => $chunk_array['text'],
                 'type' => 'paragraph',
                 'chunk_number' => $key,
-                'page_number' => $chunk_array['page_number'],
+                'page_numbers' => $chunk_array['page_numbers'],
                 'file_id' => $file->id,
             ]);
         }
+
+        $file->task->status = TaskStatus::Succeeded;
+        $file->task->finished_at = Carbon::now();
+        $file->task->save();
     }
 }

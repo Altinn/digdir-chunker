@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
+            $table->char('uuid', 36)->unique();
             $table->foreignId('task_id')->index();
             $table->text('url');
             $table->string('sha256')->nullable();

@@ -181,148 +181,35 @@ class ChunkerService
      */
     public static function parsePageNumbers(array $chunks): array
     {
-        $page_number = 0;
         $chunks_with_page_numbers = [];
-        foreach ($chunks as $chunk)
-        {
+        $pattern = '/\{(\d+)\}(\-+)/'; // Matches page numbers like {123}--
+        $last_page_number = null;
+    
+        foreach ($chunks as $chunk) {
+            $page_numbers = [];
             $matches = [];
-            preg_match('/\n*\{(\d+)\}(\-+)/', $chunk, $matches);
-
-            if ( isset($matches[1]) )
-            {
-                $page_number = $matches[1];
+    
+            // Find all page number markers in the chunk
+            preg_match_all($pattern, $chunk, $matches);
+    
+            if (!empty($matches[1])) {
+                // Collect all matched page numbers
+                $page_numbers = $matches[1];
+                $last_page_number = end($page_numbers); // Update the last detected page number
+    
+                // Remove all page number markers from the chunk text
+                $chunk = preg_replace($pattern, '', $chunk);
+            } else {
+                // If no page number is found, use the last detected page number
+                $page_numbers[] = $last_page_number;
             }
-
+    
             $chunks_with_page_numbers[] = [
-                'text' => $chunk,
-                'page_number' => $page_number,
+                'text' => trim($chunk), // Clean up the chunk text
+                'page_numbers' => $page_numbers, // Array of page numbers
             ];
         }
-
+    
         return $chunks_with_page_numbers;
-    }
-
-    public static function splitMarkdownIntoChunks($text, $maxSize): array  {
-        // Define patterns for different markdown elements
-        $patterns = [
-            'page_number_marker' => '/\n*\{(\d+)\}(\-+)/',
-            'page_number' => '/^\d+/',
-            'header' => '/^#{1,6}\s.*$/m',
-            'paragraph' => '/^\S.*$/m',
-        ];
-    
-        $chunks = [];
-        $references = [];
-        $currentChunk = '';
-        $currentPageNumberMarker = 0;
-    
-        // Split the text into lines
-        $lines = preg_split('/\r\n|\n|\r/', $text);
-
-        // Remove empty lines
-        $lines2 = [];
-        foreach ( $lines as $line )
-        {
-            if ( ! empty(trim($line)) )
-            {
-                $lines2[] = $line;
-            }
-        }
-        $lines = $lines2;
-
-        // Merge lines
-        $lines2 = [];
-        for ($i = 0; $i < count($lines); $i++) {
-            // Combine the line with the next line if the line is a header
-            if (preg_match($patterns['header'], $lines[$i]) && mb_strlen($lines[$i]) + mb_strlen($lines[$i + 1]) < $maxSize) {
-                {
-                    $lines2[] = $lines[$i] . "\n\n" . $lines[$i + 1];
-                    $i++;
-                }
-            }
-        
-            // Otherwise, just add the line as is
-            else {
-                $lines2[] = $lines[$i];
-            }   
-        }
-        $lines = $lines2;
-
-        foreach ($lines as $line) {
-
-            $line = trim($line);
-
-            $foundPattern = '';
-            $matches = [];
-    
-            // Check each pattern to see if the line matches a pattern
-            foreach ($patterns as $key => $value) {
-                if (preg_match($value, $line, $matches)) {
-                    $foundPattern = $key;
-
-                    if ($foundPattern == 'page_number_marker') {
-                        $currentPageNumberMarker = $matches[1] + 1; // Add 1 because page numbers start at 0
-                        continue 2;
-                    }
-
-                    if ($foundPattern == 'page_number') {
-                        $currentPageNumber = $matches[0];
-                        continue 2;
-                    }
-
-                    break;
-                }
-            }
-    
-            // Extract references from the line and store them in currentReferences
-            preg_match_all('/^<sup>(\d+)<\/sup>\s+(.*)$/', $line, $matches, PREG_SET_ORDER);
-            foreach ($matches as $match) {
-                $referenceNumber = $match[1];
-                $referenceText = trim($match[2]);
-                $references[] = [
-                    'number'=> $referenceNumber,
-                    'text' => $referenceText,
-                    'page' => $currentPageNumberMarker,
-                ];
-                // Remove the reference from the line
-                $line = str_replace($match[0], '', $line);
-            }
-    
-            // If the current chunk is not empty and adding this line would exceed maxSize, finalize the chunk
-            if (!empty($currentChunk) && strlen($currentChunk . "\n" . trim($line)) > $maxSize) {
-                    $chunks[] = [
-                        'text' => trim($currentChunk),
-                        'page' => $currentPageNumberMarker,
-                    ];
-                    $currentChunk = '';
-            }
-    
-            // If the line is a header and the current chunk is not empty, finalize the current chunk
-            if ($foundPattern == 'header' && !empty($currentChunk)) {
-                $chunks[] = [
-                    'text' => trim($currentChunk),
-                    'page' => $currentPageNumberMarker,
-                ];
-                $currentChunk = '';
-            }
-    
-            // Add the line to the current chunk if it's not empty after removing references
-            if (! empty(trim($line))) {
-                $chunks[] = [
-                    'text' => trim($line),
-                    'page' => $currentPageNumberMarker,
-                ];
-            }
-        }
-    
-        // Don't forget to add the last chunk
-        if (!empty($currentChunk)) {
-            $chunks[] = [
-                'text' => trim($currentChunk),
-                'page' => $currentPageNumberMarker,
-            ];
-        }
-    
-        return [$chunks, $references];
     }
 }

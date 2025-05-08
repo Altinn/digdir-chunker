@@ -2,7 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Enums\TaskStatus;
 use App\Models\File;
+use Carbon\Carbon;
+use Http;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Log;
@@ -13,6 +16,11 @@ class ConvertFileToMarkdown implements ShouldQueue
     use Queueable;
 
     public File $file;
+
+    /**
+     * The number of seconds the job can run before timing out.
+     */
+    public int $timeout = 7200;
 
     /**
      * Create a new job instance.
@@ -28,15 +36,46 @@ class ConvertFileToMarkdown implements ShouldQueue
     public function handle(): void
     {
         $directory = (new TemporaryDirectory())->create();
-        $file_path = $directory->path(basename($this->file->url));
+        $file_path = $directory->path("downloaded_file.pdf");
 
-        file_put_contents($file_path, file_get_contents($this->file->url));
+        $response = Http::get($this->file->url);
+        if ($response->failed()) {
+            Log::error("Failed to download file: " . $this->file->url);
+            $this->file->task->status = TaskStatus::Failed;
+            $this->file->task->save();
+            return;
+        }
 
-        $output = shell_exec("source /opt/marker/bin/activate && marker_single {$file_path} --output_dir {$directory->path($this->file->sha256)} --paginate_output --disable_image_extraction");
+        // Save the file to the temporary directory
+        file_put_contents($file_path, $response->body());
 
-        Log::info($directory->path($this->file->sha256));
+        $this->file->task->started_at = Carbon::now();
+        $this->file->task->status = TaskStatus::Processing;
+        $this->file->task->save();
 
-        // $directory->delete();
+
+        $command = "/opt/marker/bin/marker_single {$file_path} --output_dir {$directory->path()} --paginate_output --disable_image_extraction";
+        exec($command, $outputLines, $exitCode);
+
+        if ($exitCode !== 0) {
+            Log::error("Command failed with exit code {$exitCode}: " . $command);
+            return;
+        } else {
+            Log::debug("Command succeeded: " . implode("\n", $outputLines));
+        }
+        
+        $markdown_file_path = $directory->path() . DIRECTORY_SEPARATOR . "downloaded_file" . DIRECTORY_SEPARATOR . "downloaded_file.md";
+
+        if (file_exists($markdown_file_path)) {
+            $this->file->markdown = file_get_contents($markdown_file_path);
+            $this->file->save();
+        } else {
+            Log::error("Markdown file not found: " . $markdown_file_path);
+            $this->file->task->status = TaskStatus::Failed;
+            $this->file->task->save();
+        }
+
+         $directory->delete();
         
     }
 }
