@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ChunkType;
 use App\Enums\TaskStatus;
 use App\Models\Chunk;
 use App\Models\File;
@@ -38,14 +39,14 @@ class ChunkFile implements ShouldQueue
         {
             Chunk::create([
                 'text' => $chunk_array['text'],
-                'type' => 'paragraph',
+                'chunk_type' => ChunkType::Paragraph,
                 'chunk_number' => $key,
                 'page_numbers' => $chunk_array['page_numbers'],
                 'file_id' => $file->id,
             ]);
         }
 
-        $file->task->status = TaskStatus::Succeeded;
+        $file->task->task_status = TaskStatus::Succeeded;
         $file->task->finished_at = Carbon::now();
         $file->task->save();
     }

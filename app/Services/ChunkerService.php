@@ -193,20 +193,22 @@ class ChunkerService
             preg_match_all($pattern, $chunk, $matches);
     
             if (!empty($matches[1])) {
-                // Collect all matched page numbers
-                $page_numbers = $matches[1];
+                // Collect all matched page numbers and cast them to integers
+                $page_numbers = array_map('intval', $matches[1]);
                 $last_page_number = end($page_numbers); // Update the last detected page number
     
                 // Remove all page number markers from the chunk text
                 $chunk = preg_replace($pattern, '', $chunk);
             } else {
                 // If no page number is found, use the last detected page number
-                $page_numbers[] = $last_page_number;
+                if ($last_page_number !== null) {
+                    $page_numbers[] = (int) $last_page_number;
+                }
             }
     
             $chunks_with_page_numbers[] = [
                 'text' => trim($chunk), // Clean up the chunk text
-                'page_numbers' => $page_numbers, // Array of page numbers
+                'page_numbers' => $page_numbers, // Array of page numbers as integers
             ];
         }
     

@@ -41,7 +41,7 @@ class ConvertFileToMarkdown implements ShouldQueue
         $response = Http::get($this->file->url);
         if ($response->failed()) {
             Log::error("Failed to download file: " . $this->file->url);
-            $this->file->task->status = TaskStatus::Failed;
+            $this->file->task->task_status = TaskStatus::Failed;
             $this->file->task->save();
             return;
         }
@@ -50,7 +50,7 @@ class ConvertFileToMarkdown implements ShouldQueue
         file_put_contents($file_path, $response->body());
 
         $this->file->task->started_at = Carbon::now();
-        $this->file->task->status = TaskStatus::Processing;
+        $this->file->task->task_status = TaskStatus::Processing;
         $this->file->task->save();
 
 
@@ -59,6 +59,8 @@ class ConvertFileToMarkdown implements ShouldQueue
 
         if ($exitCode !== 0) {
             Log::error("Command failed with exit code {$exitCode}: " . $command);
+            $this->file->task->task_status = TaskStatus::Failed;
+            $this->file->task->save();
             return;
         } else {
             Log::debug("Command succeeded: " . implode("\n", $outputLines));
@@ -71,11 +73,10 @@ class ConvertFileToMarkdown implements ShouldQueue
             $this->file->save();
         } else {
             Log::error("Markdown file not found: " . $markdown_file_path);
-            $this->file->task->status = TaskStatus::Failed;
+            $this->file->task->task_status = TaskStatus::Failed;
             $this->file->task->save();
         }
 
          $directory->delete();
-        
     }
 }

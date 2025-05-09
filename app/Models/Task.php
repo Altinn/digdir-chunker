@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ChunkingMethod;
 use App\Enums\ConversionBackend;
+use App\Enums\TaskStatus;
 use Dyrynda\Database\Support\BindsOnUuid;
 use Dyrynda\Database\Support\GeneratesUuid;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ class Task extends Model
     protected $casts = [
         'conversion_backend' => ConversionBackend::class,
         'chunking_method' => ChunkingMethod::class,
+        'task_status' => TaskStatus::class,
     ];
 
     protected $dates = [

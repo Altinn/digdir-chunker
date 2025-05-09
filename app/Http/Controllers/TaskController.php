@@ -21,6 +21,12 @@ class TaskController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
+            /**
+             * The URL of the file to be processed.
+             * 
+             * @var string
+             * @example "https://example.com/file.pdf"
+             */
             "url" => "required|string",
         ]);
 
@@ -34,8 +40,8 @@ class TaskController extends Controller
         // Create a Task and an associated File
         $task = Task::create();
         $task->chunking_method = config('tasks.default_chunking_method');
-        $task->backend = config('tasks.default_conversion_backend');
-        $task->status = TaskStatus::Starting;
+        $task->conversion_backend = config('tasks.default_conversion_backend');
+        $task->task_status = TaskStatus::Starting;
         $task->save();
 
         $file = new File(['url' => $validated['url']]);

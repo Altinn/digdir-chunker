@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('chunks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('file_id')->nullable();
-            $table->string('type')->default('paragraph')->nullable();
+            $table->string('chunk_type')->default('paragraph')->nullable();
             $table->text('text')->nullable();
             $table->integer('chunk_number')->nullable();
             $table->json('page_numbers')->nullable();

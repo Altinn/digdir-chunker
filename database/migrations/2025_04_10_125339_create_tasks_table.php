@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->char('uuid', 36)->unique();
-            $table->string('backend')->nullable();
+            $table->string('conversion_backend')->nullable();
             $table->string('chunking_method')->nullable();
-            $table->string('status')->nullable();
+            $table->string('task_status')->nullable();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('finished_at')->nullable();
             $table->dateTime('expires_at')->nullable();
