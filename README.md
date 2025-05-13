@@ -1,7 +1,5 @@
 # digdir-chunker
 
-*Work in progress. Not yet working «out of the box».*
-
 This application provides REST API endpoints for converting PDF and other documents to paginated and chunked Markdown.
 
 The service takes a URL to a document as input and returns a document ID which can be used as a parameter for polling the conversion status and retrieving the converted and chunked document when it has been processed.
