@@ -37,5 +37,16 @@ return [
 
     'default_chunking_target_length' => env('TASKS_DEFAULT_CHUNKING_TARGET_LENGTH', 512),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default task deletion delay
+    |--------------------------------------------------------------------------
+    |
+    | Tasks are automatically deleted after this delay in minutes, unless another delay was specified by the user.
+    |
+    */
+
+    'default_deletion_delay_MINUTES' => env('TASKS_DEFAULT_DELETION_DELAY_MINUTES', 24*60*30), // 30 days
+
 
 ];

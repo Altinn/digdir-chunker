@@ -183,7 +183,7 @@ class ChunkerService
     {
         $chunks_with_page_numbers = [];
         $pattern = '/\{(\d+)\}(\-+)/'; // Matches page numbers like {123}--
-        $last_page_number = null;
+        $last_page_number = 0;
     
         foreach ($chunks as $chunk) {
             $page_numbers = [];

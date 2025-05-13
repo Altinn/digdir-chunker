@@ -1,6 +1,8 @@
 services:
   app:
-    image: jkaninda/laravel-php-fpm:latest
+    build:
+      context: .
+      dockerfile: ./.docker/app/Dockerfile
     container_name: digdir-chunker-app
     restart: unless-stopped
     user: www-data # For production
