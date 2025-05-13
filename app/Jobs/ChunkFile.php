@@ -10,6 +10,7 @@ use App\Services\ChunkerService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Carbon\Carbon;
+use Log;
 
 class ChunkFile implements ShouldQueue
 {
@@ -31,7 +32,16 @@ class ChunkFile implements ShouldQueue
     public function handle(): void
     {
         $file = $this->file;
+
         $content = $file->markdown ?? "";
+
+        if ( empty($file->markdown) )
+        {
+            Log::error("File does not have markdown content: " . $file->id);
+            $this->file->task->task_status = TaskStatus::Failed;
+            return;
+        }
+
         $chunk_arrays = ChunkerService::chunkMarkdown($content, 1000);
         $chunks = ChunkerService::parsePageNumbers($chunk_arrays);
 

@@ -54,10 +54,10 @@ class ConvertFileToMarkdown implements ShouldQueue
         $this->file->task->save();
 
 
-        $command = "/var/www/.local/bin/marker_single {$file_path} --output_dir {$directory->path()} --paginate_output --disable_image_extraction";
+        $command = "/opt/marker/bin/marker_single {$file_path} --output_dir {$directory->path()} --paginate_output --disable_image_extraction";
         exec($command, $outputLines, $exitCode);
 
-        if ($exitCode !== 0 || $exitCode !== 1) {
+        if ($exitCode !== 0) {
             Log::error("Command failed with exit code {$exitCode}: " . $command);
             $this->file->task->task_status = TaskStatus::Failed;
             $this->file->task->save();
@@ -77,6 +77,6 @@ class ConvertFileToMarkdown implements ShouldQueue
             $this->file->task->save();
         }
 
-         // $directory->delete();
+         $directory->delete();
     }
 }
