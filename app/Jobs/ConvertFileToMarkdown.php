@@ -54,7 +54,7 @@ class ConvertFileToMarkdown implements ShouldQueue
         $this->file->task->save();
 
 
-        $command = "/opt/marker/bin/marker_single {$file_path} --output_dir {$directory->path()} --paginate_output --disable_image_extraction";
+        $command = "/opt/marker/bin/marker_single {$file_path} --disable_image_extraction --paginate_output --output_dir {$directory->path()}";
         exec($command, $outputLines, $exitCode);
 
         if ($exitCode !== 0) {
