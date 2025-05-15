@@ -6,7 +6,7 @@ The service takes a URL to a document as input and returns a document ID which c
 
 ## Development and deployment
 
-Create an environment file and make any eventual configuration changes (e.g. change APP_ENV from local to production)
+Create an environment file and make any eventual configuration changes (e.g. change `APP_ENV` from `local` to `production` for deployment).
 
 ```
 cp .env.example .env
