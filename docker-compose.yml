@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: ./.docker/app/Dockerfile
+    environment:
+      - APP_ENV=${APP_ENV}
     container_name: digdir-chunker-app
     restart: unless-stopped
     user: www-data # For production

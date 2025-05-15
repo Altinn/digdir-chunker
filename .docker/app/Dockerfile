@@ -7,7 +7,7 @@ RUN apt update \
     && apt install -y python3-pip python3-venv \
     && python3 -m venv /opt/marker \
     && /opt/marker/bin/pip install --upgrade pip \
-    && /opt/marker/bin/pip install 'marker-pdf[full]' \
+    && /opt/marker/bin/pip install 'marker-pdf[full]==1.6.1' \
     && apt clean
 
 RUN chown -R www-data:www-data /opt/marker
@@ -15,4 +15,6 @@ RUN chown -R www-data:www-data /opt/marker
 # Set the working directory
 WORKDIR /var/www/html
 
-# ENTRYPOINT ["/var/www/html/artisan migrate && /var/www/html/artisan queue:restart"]
+COPY .docker/app/entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
