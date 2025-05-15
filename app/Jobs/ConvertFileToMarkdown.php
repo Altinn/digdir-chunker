@@ -54,7 +54,7 @@ class ConvertFileToMarkdown implements ShouldQueue
         $this->file->task->save();
 
 
-        $command = "/opt/marker/bin/marker_single {$file_path} --disable_image_extraction --paginate_output --output_dir {$directory->path()}";
+        $command = "marker_single {$file_path} --paginate_output --output_dir {$directory->path()}";
         exec($command, $outputLines, $exitCode);
 
         if ($exitCode !== 0) {
@@ -63,7 +63,7 @@ class ConvertFileToMarkdown implements ShouldQueue
             $this->file->task->save();
             return;
         } else {
-            Log::debug("Command succeeded: " . implode("\n", $outputLines));
+            Log::debug("Command succeeded: " . $command . "\n\n" . implode("\n", $outputLines));
         }
         
         $markdown_file_path = $directory->path() . DIRECTORY_SEPARATOR . "downloaded_file" . DIRECTORY_SEPARATOR . "downloaded_file.md";
@@ -77,6 +77,6 @@ class ConvertFileToMarkdown implements ShouldQueue
             $this->file->task->save();
         }
 
-         $directory->delete();
+        $directory->delete();
     }
 }
