@@ -7,7 +7,7 @@ services:
       - APP_ENV=${APP_ENV}
     container_name: digdir-chunker-app
     restart: unless-stopped
-    user: www-data # For production
+    user: www-data
     volumes:
       - ./:/var/www/html
     networks:
@@ -24,7 +24,6 @@ services:
        - DOCUMENT_ROOT=/var/www/html/public
        - CLIENT_MAX_BODY_SIZE=1024M
        - PHP_FPM_HOST=app:9000
-        
      networks:
       - default
   mariadb:
@@ -44,7 +43,6 @@ services:
     volumes:
       - .docker/db/init:/docker-entrypoint-initdb.d
       - 'mariadb:/var/lib/mysql'
-
 volumes:
   mariadb:
     driver: local
