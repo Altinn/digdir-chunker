@@ -4,12 +4,24 @@ This application provides REST API endpoints for converting PDF and other docume
 
 The service takes a URL to a document as input and returns a document ID which can be used as a parameter for polling the conversion status and retrieving the converted and chunked document when it has been processed.
 
-## Development
+## Development and deployment
+
+Create an environment file and make any eventual configuration changes (e.g. change APP_ENV from local to production)
+
+```
+cp .env.example .env
+```
 
 Start the application and required services:
 
 ```
 docker-compose up -d
+```
+
+Set the application key:
+
+```
+docker compose exec app php artisan key:generate
 ```
 
 Run database migrations:
@@ -44,13 +56,6 @@ docker compose exec app php artisan list
 ## Rest API documentation
 
 API documentation is automatically generated and published at `/docs/api`.
-
-
-## Configuration
-
-### Data persistence
-
-@todo Document conversion results can be pruned after a configurable amount of time.
 
 ## Maintenance
 
