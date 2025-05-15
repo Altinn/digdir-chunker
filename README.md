@@ -53,7 +53,7 @@ List all available commands:
 docker compose exec app php artisan list
 ```
 
-## Rest API documentation
+## REST API documentation
 
 API documentation is automatically generated and published at `/docs/api`.
 
