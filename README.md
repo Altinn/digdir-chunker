@@ -24,10 +24,20 @@ Set the application key:
 docker compose exec app php artisan key:generate
 ```
 
+Install dependencies:
+```
+docker compose exec app composer install
+```
+
 Run database migrations:
 
 ```
 docker compose exec app php artisan migrate
+```
+
+Restart queues:
+```
+docker compose exec app php artisan queue:restart
 ```
 
 The application should now be up and running.
