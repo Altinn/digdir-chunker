@@ -18,15 +18,15 @@ Start the application and required services:
 docker-compose up -d
 ```
 
+Install dependencies:
+```
+docker compose exec app composer install
+```
+
 Set the application key:
 
 ```
 docker compose exec app php artisan key:generate
-```
-
-Install dependencies:
-```
-docker compose exec app composer install
 ```
 
 Run database migrations:
