@@ -12,7 +12,7 @@ class ChunkerService
      * @param int    $maxSize
      * @return string[] Array of chunk strings
      */
-    public static function chunkMarkdown(string $markdown, int $maxSize): array
+    public static function chunkSemantic(string $markdown, int $maxSize): array
     {
         // Normalize line endings to "\n"
         $markdown = str_replace(["\r\n", "\r"], "\n", $markdown);
@@ -213,5 +213,107 @@ class ChunkerService
         }
     
         return $chunks_with_page_numbers;
+    }
+
+    /**
+     * Recursively splits text into chunks of at most $chunkSize characters,
+     * preferring to split at the earliest possible separator in the list,
+     * and allowing for a maximum overlap between consecutive chunks.
+     *
+     * @param string $text The text to split.
+     * @param int $chunkSize The maximum size of each chunk.
+     * @param int $chunkOverlap The maximum number of characters to overlap between chunks.
+     * @param array|null $separators List of separators to split on, in order of priority.
+     *                               Defaults to ["\n\n", "\n", " ", ""].
+     * @return string[] Array of chunked strings.
+     */
+    public static function chunkRecursive(
+        string $text,
+        int $chunkSize,
+        int $chunkOverlap = 0,
+        ?array $separators = null
+    ): array {
+        if ($separators === null) {
+            $separators = ["\n\n", "\n", " ", ""];
+        }
+
+        // Base case: text is already short enough or no more separators to try
+        if (mb_strlen($text) <= $chunkSize || empty($separators)) {
+            return [trim($text)];
+        }
+
+        $separator = $separators[0];
+        $restSeparators = array_slice($separators, 1);
+
+        // If separator is empty string, fallback to hard split with overlap
+        if ($separator === "") {
+            $chunks = [];
+            $offset = 0;
+            $len = mb_strlen($text);
+            while ($offset < $len) {
+                $end = min($offset + $chunkSize, $len);
+                $chunk = mb_substr($text, $offset, $chunkSize);
+                $chunks[] = $chunk;
+                if ($end === $len) {
+                    break;
+                }
+                // Overlap: move offset forward by chunkSize - chunkOverlap
+                $offset += max($chunkSize - $chunkOverlap, 1);
+            }
+            return array_map('trim', $chunks);
+        }
+
+        // Split by the current separator
+        $splits = explode($separator, $text);
+        $chunks = [];
+        $currentChunk = "";
+
+        foreach ($splits as $i => $split) {
+            // Add separator back except for the first split
+            $piece = ($i === 0) ? $split : $separator . $split;
+
+            if (mb_strlen($currentChunk . $piece) > $chunkSize) {
+                if (!empty($currentChunk)) {
+                    // Recursively split the current chunk if it's too big
+                    $subChunks = self::recursiveCharacterTextSplit($currentChunk, $chunkSize, $chunkOverlap, $restSeparators);
+                    // Add overlap if needed
+                    if ($chunkOverlap > 0 && !empty($chunks) && !empty($subChunks)) {
+                        $lastChunk = end($chunks);
+                        $overlap = mb_substr($lastChunk, -$chunkOverlap);
+                        $subChunks[0] = $overlap . $subChunks[0];
+                    }
+                    $chunks = array_merge($chunks, $subChunks);
+                    $currentChunk = "";
+                }
+                // If the piece itself is too big, split it recursively
+                if (mb_strlen($piece) > $chunkSize) {
+                    $subChunks = self::recursiveCharacterTextSplit($piece, $chunkSize, $chunkOverlap, $restSeparators);
+                    // Add overlap if needed
+                    if ($chunkOverlap > 0 && !empty($chunks) && !empty($subChunks)) {
+                        $lastChunk = end($chunks);
+                        $overlap = mb_substr($lastChunk, -$chunkOverlap);
+                        $subChunks[0] = $overlap . $subChunks[0];
+                    }
+                    $chunks = array_merge($chunks, $subChunks);
+                } else {
+                    $currentChunk = $piece;
+                }
+            } else {
+                $currentChunk .= $piece;
+            }
+        }
+
+        if (!empty($currentChunk)) {
+            // Add overlap if needed
+            if ($chunkOverlap > 0 && !empty($chunks)) {
+                $lastChunk = end($chunks);
+                $overlap = mb_substr($lastChunk, -$chunkOverlap);
+                $currentChunk = $overlap . $currentChunk;
+            }
+            $chunks[] = trim($currentChunk);
+        }
+
+        // Remove any empty chunks
+        return array_values(array_filter(array_map('trim', $chunks), fn($c) => $c !== ""));
     }
 }

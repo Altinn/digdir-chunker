@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ChunkingMethod;
 use App\Enums\ChunkType;
 use App\Enums\TaskStatus;
 use App\Models\Chunk;
@@ -18,10 +19,16 @@ class ChunkFile implements ShouldQueue
 
     protected File $file;
 
+    protected ChunkingMethod $chunkingMethod;
+
+    protected int $chunkSize;
+
+    protected int $chunkOverlap;
+
     /**
      * Create a new job instance.
      */
-    public function __construct(File $file)
+    public function __construct(File $file, $chunkingMethod, $chunkSize, $chunkOverlap = 0)
     {
         $this->file = $file;
     }
@@ -42,7 +49,7 @@ class ChunkFile implements ShouldQueue
             return;
         }
 
-        $chunk_arrays = ChunkerService::chunkMarkdown($content, 1000);
+        $chunk_arrays = ChunkerService::chunkSemantic($content, $this->chunkSize);
         $chunks = ChunkerService::parsePageNumbers($chunk_arrays);
 
         foreach ($chunks as $key => $chunk_array)

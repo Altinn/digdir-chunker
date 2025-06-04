@@ -35,7 +35,19 @@ return [
     |
     */
 
-    'default_chunking_target_length' => env('TASKS_DEFAULT_CHUNKING_TARGET_LENGTH', 512),
+    'default_chunk_size' => env('TASKS_DEFAULT_CHUNK_SIZE', 1024),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default chunk overlap
+    |--------------------------------------------------------------------------
+    |
+    | The max number of characters that can overlap between chunks.
+    |
+    */
+
+    'default_chunk_overlap' => env('TASKS_DEFAULT_CHUNK_OVERLAP', 256),
+    
 
     /*
     |--------------------------------------------------------------------------
