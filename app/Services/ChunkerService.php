@@ -275,7 +275,7 @@ class ChunkerService
             if (mb_strlen($currentChunk . $piece) > $chunkSize) {
                 if (!empty($currentChunk)) {
                     // Recursively split the current chunk if it's too big
-                    $subChunks = self::recursiveCharacterTextSplit($currentChunk, $chunkSize, $chunkOverlap, $restSeparators);
+                    $subChunks = self::chunkRecursive($currentChunk, $chunkSize, $chunkOverlap, $restSeparators);
                     // Add overlap if needed
                     if ($chunkOverlap > 0 && !empty($chunks) && !empty($subChunks)) {
                         $lastChunk = end($chunks);
@@ -287,7 +287,7 @@ class ChunkerService
                 }
                 // If the piece itself is too big, split it recursively
                 if (mb_strlen($piece) > $chunkSize) {
-                    $subChunks = self::recursiveCharacterTextSplit($piece, $chunkSize, $chunkOverlap, $restSeparators);
+                    $subChunks = self::chunkRecursive($piece, $chunkSize, $chunkOverlap, $restSeparators);
                     // Add overlap if needed
                     if ($chunkOverlap > 0 && !empty($chunks) && !empty($subChunks)) {
                         $lastChunk = end($chunks);
