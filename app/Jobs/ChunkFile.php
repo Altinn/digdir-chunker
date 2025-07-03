@@ -21,7 +21,7 @@ class ChunkFile implements ShouldQueue
 
     protected ChunkingMethod $chunkingMethod;
 
-    protected int $chunkSize;
+    protected int $chunkSize = 0;
 
     protected int $chunkOverlap;
 
