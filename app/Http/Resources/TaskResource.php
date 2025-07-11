@@ -32,6 +32,9 @@ class TaskResource extends JsonResource
                  * The status of the task.
                  */
                 'task_status' => $this->task_status,
+                /**
+                 * The time the task was created.
+                 */
                 'created_at' => $this->created_at,
                 /**
                  * The time the task started processing.

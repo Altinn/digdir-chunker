@@ -16,6 +16,8 @@ return new class extends Migration
             $table->char('uuid', 36)->unique();
             $table->string('conversion_backend')->nullable();
             $table->string('chunking_method')->nullable();
+            $table->integer('chunk_size')->nullable();
+            $table->integer('chunk_overlap')->nullable();
             $table->string('task_status')->nullable();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('finished_at')->nullable();

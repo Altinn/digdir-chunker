@@ -21,16 +21,19 @@ class ChunkFile implements ShouldQueue
 
     protected ChunkingMethod $chunkingMethod;
 
-    protected int $chunkSize = 0;
+    protected int $chunkSize;
 
     protected int $chunkOverlap;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(File $file, $chunkingMethod, $chunkSize, $chunkOverlap = 0)
+    public function __construct(File $file, $chunkingMethod = null, $chunkSize = null, $chunkOverlap = null)
     {
         $this->file = $file;
+        $this->chunkingMethod = $chunkingMethod ?? config('tasks.default_chunking_method');
+        $this->chunkSize = $chunkSize ?? config('tasks.default_chunk_size');
+        $this->chunkOverlap = $chunkOverlap ?? config('tasks.default_chunk_overlap');
     }
 
     /**
@@ -49,7 +52,17 @@ class ChunkFile implements ShouldQueue
             return;
         }
 
-        $chunk_arrays = ChunkerService::chunkSemantic($content, $this->chunkSize);
+        switch ($this->chunkingMethod) {
+            case ChunkingMethod::Semantic:
+                $chunk_arrays = ChunkerService::chunkSemantic($content, $this->chunkSize);
+                break;
+            case ChunkingMethod::Recursive:
+                $chunk_arrays = ChunkerService::chunkRecursive($content, $this->chunkSize, $this->chunkOverlap);
+                break;
+            default:
+                $chunk_arrays = ChunkerService::chunkSemantic($content, $this->chunkSize);
+        }
+
         $chunks = ChunkerService::parsePageNumbers($chunk_arrays);
 
         foreach ($chunks as $key => $chunk_array)
@@ -66,5 +79,18 @@ class ChunkFile implements ShouldQueue
         $file->task->task_status = TaskStatus::Succeeded;
         $file->task->finished_at = Carbon::now();
         $file->task->save();
+    }
+
+    /**
+     * Handles job failure.
+     * 
+     * @param \Throwable $exception
+     * @return void
+     */
+    public function failed(\Throwable $exception): void
+    {
+        Log::error("ChunkFile job failed for file ID {$this->file->id}: " . $exception->getMessage());
+        $this->file->task->task_status = TaskStatus::Failed;
+        $this->file->task->save();
     }
 }

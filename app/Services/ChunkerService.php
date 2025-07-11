@@ -10,19 +10,20 @@ class ChunkerService
      *
      * @param string $markdown
      * @param int    $maxSize
+     * @param bool   $allowSemanticOverflow Whether to allow tables and lists to exceed maxSize
      * @return string[] Array of chunk strings
      */
-    public static function chunkSemantic(string $markdown, int $maxSize): array
+    public static function chunkSemantic(string $markdown, int $maxSize, bool $allowSemanticOverflow = true): array
     {
         // Normalize line endings to "\n"
         $markdown = str_replace(["\r\n", "\r"], "\n", $markdown);
 
-        // First split into potential “block candidates” (roughly by blank lines),
+        // First split into potential "block candidates" (roughly by blank lines),
         // but keep heading lines tied to the subsequent text if possible.
         $rawBlocks = self::splitIntoBlocks($markdown);
 
         // Expand or refine the blocks based on adjacency (e.g., heading + paragraph).
-        // Also detect code blocks, lists, or tables, so we don’t incorrectly split them.
+        // Also detect code blocks, lists, or tables, so we don't incorrectly split them.
         $blocks = self::mergeLogicalBlocks($rawBlocks);
 
         // Now chunk them into the final output, respecting the max size.
@@ -30,11 +31,32 @@ class ChunkerService
         $currentChunk = '';
 
         foreach ($blocks as $block) {
+            // Skip empty blocks
+            if (empty(trim($block))) {
+                continue;
+            }
+
+            $isTable = self::isTableBlock($block);
+            $isList = self::isListBlock($block);
+            $isSemanticBlock = $isTable || $isList;
+
+            // If it's a semantic block and we allow overflow, never split it
+            if ($isSemanticBlock && $allowSemanticOverflow) {
+                // If we have content in current chunk, flush it first
+                if (!empty(trim($currentChunk))) {
+                    $chunks[] = trim($currentChunk);
+                    $currentChunk = '';
+                }
+                // Add the semantic block as its own chunk, regardless of size
+                $chunks[] = trim($block);
+                continue;
+            }
+
             // If the block alone exceeds max size, we have to split it.
             if (strlen($block) > $maxSize) {
                 // Close off any existing chunk (if not empty) before we chunk the big block
-                if (!empty($currentChunk)) {
-                    $chunks[] = $currentChunk;
+                if (!empty(trim($currentChunk))) {
+                    $chunks[] = trim($currentChunk);
                     $currentChunk = '';
                 }
                 // Split large block by line or by chunkOfText. This is a fallback
@@ -42,29 +64,33 @@ class ChunkerService
                 // but we have to do it if the single block is too large.
                 $subBlocks = self::splitLargeBlock($block, $maxSize);
                 foreach ($subBlocks as $sb) {
-                    $chunks[] = $sb;
+                    if (!empty(trim($sb))) {
+                        $chunks[] = trim($sb);
+                    }
                 }
                 continue;
             }
 
             // If adding this block to the current chunk exceeds $maxSize, start a new chunk
-            if (strlen($currentChunk) + strlen($block) > $maxSize) {
-                if (!empty($currentChunk)) {
-                    $chunks[] = rtrim($currentChunk, "\n");
+            $separator = empty($currentChunk) ? '' : "\n\n";
+            if (strlen($currentChunk . $separator . $block) > $maxSize) {
+                if (!empty(trim($currentChunk))) {
+                    $chunks[] = trim($currentChunk);
                 }
-                $currentChunk = $block . "\n";
+                $currentChunk = $block;
             } else {
                 // Append to the current chunk
-                $currentChunk .= $block . "\n";
+                $currentChunk .= $separator . $block;
             }
         }
 
         // Add any trailing content
-        if (!empty($currentChunk)) {
-            $chunks[] = rtrim($currentChunk, "\n");
+        if (!empty(trim($currentChunk))) {
+            $chunks[] = trim($currentChunk);
         }
 
-        return $chunks;
+        // Filter out any empty chunks that might have slipped through
+        return array_values(array_filter($chunks, fn($chunk) => !empty(trim($chunk))));
     }
 
     /**
@@ -315,5 +341,55 @@ class ChunkerService
 
         // Remove any empty chunks
         return array_values(array_filter(array_map('trim', $chunks), fn($c) => $c !== ""));
+    }
+
+    /**
+     * Detect if a block is a Markdown table.
+     * A simple heuristic: contains at least one line with | and one line with ---.
+     */
+    public static function isTableBlock(string $block): bool
+    {
+        $lines = explode("\n", $block);
+        $hasPipe = false;
+        $hasDash = false;
+        
+        foreach ($lines as $line) {
+            if (strpos($line, '|') !== false) {
+                $hasPipe = true;
+            }
+            if (preg_match('/^\s*\|?[\s:-]+\|[\s:-]+\|?/', $line) || preg_match('/^\s*[-:]+\s*\|\s*[-:]+/', $line)) {
+                $hasDash = true;
+            }
+        }
+        return $hasPipe && $hasDash;
+    }
+
+    /**
+     * Detect if a block is a Markdown list.
+     * A simple heuristic: multiple lines starting with list markers (-, *, +, or numbers).
+     */
+    public static function isListBlock(string $block): bool
+    {
+        $lines = explode("\n", trim($block));
+        $listLines = 0;
+        
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            // Check for unordered list markers (-, *, +)
+            if (preg_match('/^[-*+]\s+/', $trimmed)) {
+                $listLines++;
+            }
+            // Check for ordered list markers (1., 2., etc.)
+            elseif (preg_match('/^\d+\.\s+/', $trimmed)) {
+                $listLines++;
+            }
+            // Check for indented list items (continuation)
+            elseif (preg_match('/^\s{2,}[-*+]\s+/', $line) || preg_match('/^\s{2,}\d+\.\s+/', $line)) {
+                $listLines++;
+            }
+        }
+        
+        // Consider it a list if at least 2 lines are list items
+        return $listLines >= 2;
     }
 }

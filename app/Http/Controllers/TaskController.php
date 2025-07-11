@@ -65,12 +65,11 @@ class TaskController extends Controller
             ], 422);
         }
 
-        $chunk_size = $validated['chunk_size'] ?? config('tasks.default_chunk_size');
-        $chunk_overlap = $validated['chunk_overlap'] ?? config('tasks.default_chunk_overlap');
-
         // Create a Task and an associated File
         $task = Task::create();
         $task->chunking_method = $validated['chunking_method'] ?? config('tasks.default_chunking_method');
+        $task->chunk_size = $validated['chunk_size'] ?? config('tasks.default_chunk_size');
+        $task->chunk_overlap = $validated['chunk_overlap'] ?? config('tasks.default_chunk_overlap');
         $task->conversion_backend = config('tasks.default_conversion_backend');
         $task->task_status = TaskStatus::Starting;
         $task->save();
@@ -95,7 +94,7 @@ class TaskController extends Controller
         // Dispatch jobs to process the file
         Bus::chain([
             new ConvertFileToMarkdown($file),
-            new ChunkFile($file, $task->chunking_method, $chunk_size, $chunk_overlap),
+            new ChunkFile($file, $task->chunking_method, $task->chunk_size, $task->chunk_overlap),
         ])->dispatch();
 
         return new TaskResource($task);
