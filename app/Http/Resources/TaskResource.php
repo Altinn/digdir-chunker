@@ -60,6 +60,11 @@ class TaskResource extends JsonResource
                  * @example "https://api.example.com/tasks/4490ff5e-3f25-49d9-b6cf-b7a252e96429"
                  */
                 'self' => route('task.show', $this->uuid),
+                /**
+                 * Cancel the task.
+                 * @example "https://api.example.com/tasks/4490ff5e-3f25-49d9-b6cf-b7a252e96429/cancel"
+                 */
+                'cancel' => route('task.cancel', $this->uuid),
             ],
         ];
     }
