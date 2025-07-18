@@ -46,7 +46,7 @@ The application should now be up and running on localhost port 80 by default.
 
 The HTTP transport MCP server is available at http://localhost/mcp by default.
 
-The MCP server can also be run locally using the stdio transport. Replace \<path-to-digdir-chunker\> with the absolute path to this repo in this example config:
+The MCP server can also be run locally using the stdio transport. Replace `<path-to-digdir-chunker>` with the absolute path to this repo in this example config:
 
 ```
 {
