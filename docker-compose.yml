@@ -43,6 +43,23 @@ services:
     volumes:
       - .docker/db/init:/docker-entrypoint-initdb.d
       - 'mariadb:/var/lib/mysql'
+  meilisearch:
+    image: 'getmeili/meilisearch:v1.15.1'
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: '${MEILISEARCH_MASTER_KEY}'
+    ports:
+      - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
+    volumes:
+      - 'meilisearch:/meili_data'
+    networks:
+      - default
+    healthcheck:
+      test: set -o pipefail;curl -fsS http://localhost:7700/health | grep -q '{"status":"available"}'
+      retries: 3
+      timeout: 5s
 volumes:
   mariadb:
+    driver: local
+  meilisearch:
     driver: local

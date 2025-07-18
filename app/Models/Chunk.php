@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\Enums\ChunkType;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Chunk extends Model
 {
+    use Searchable;
+
     protected $guarded = [];
 
     protected $casts = [
