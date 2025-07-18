@@ -81,7 +81,7 @@ class DocumentService
 
         $text = implode('', $chunks);
         $summary = Prism::text()
-            ->using(Provider::OpenAI, 'gpt-4o')
+            ->using(Provider::Anthropic, 'claude-3-7-sonnet-latest')
             ->withPrompt('Write a concise summary of the following text. Ignore image files.' . $text)
             ->asText()->text;
         
