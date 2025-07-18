@@ -1,6 +1,6 @@
 # digdir-chunker
 
-This application provides REST API endpoints for converting PDF and other documents to paginated and chunked Markdown.
+This application provides a JSON REST API and MCP tools for converting PDF and other documents to paginated and chunked Markdown.
 
 The service takes a URL to a document as input and returns a document ID which can be used as a parameter for polling the conversion status and retrieving the converted and chunked document when it has been processed.
 
@@ -40,7 +40,35 @@ Restart queues:
 docker compose exec app php artisan queue:restart
 ```
 
-The application should now be up and running.
+The application should now be up and running on localhost port 80 by default.
+
+## MCP setup
+
+The HTTP transport MCP server is available at http://localhost/mcp by default.
+
+The MCP server can also be run locally using the stdio transport. Replace <path-to-digdir-chunker> with the absolute path to this repo in this example config:
+
+```
+{
+    "mcpServers": {
+        "digdir-chunker": {
+            "command": "/usr/local/bin/docker",
+            "args": [
+                "compose",
+                "-f",
+                "<path-to-digdir-chunker>/docker-compose.yml",
+                "exec",
+                "-T",
+                "app",
+                "php",
+                "artisan",
+                "mcp:serve",
+                "--transport=stdio"
+            ]
+        }
+    }
+}
+```
 
 
 ## Common commands
