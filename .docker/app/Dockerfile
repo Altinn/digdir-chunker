@@ -9,7 +9,6 @@ RUN apt update \
     && python3 -m venv /opt/marker \
     && /opt/marker/bin/pip install --upgrade pip \
     && /opt/marker/bin/pip install 'marker-pdf[full]' \
-    && /opt/marker/bin/pip install click==8.1.8 \
     && apt clean
 
 RUN chown -R www-data:www-data /opt/marker
