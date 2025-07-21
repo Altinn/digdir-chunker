@@ -18,7 +18,7 @@ class DocumentService
     /**
      * Import a PDF document
      */
-    #[McpTool(name: 'import_document', description: 'Import a document from the provided URL')]
+    #[McpTool(name: 'import_document', description: 'Import a document from the provided URL. After calling this tool, you can use the `get_document_task_info` tool to check the status of the import task. Check the task status after 3 seconds.')]
     public function importDocument(string $url): TaskResource
     {
         $controller = new TaskController();
@@ -82,12 +82,29 @@ class DocumentService
         $text = implode('', $chunks);
         $summary = Prism::text()
             ->using(Provider::Anthropic, 'claude-3-7-sonnet-latest')
-            ->withPrompt('Write a concise summary of the following text. Ignore image files.' . $text)
+            ->withPrompt("Write a short and concise summary of the following text. Ignore image files:\r\n\r\n" . $text)
             ->asText()->text;
         
         return [
             'uuid' => $file_uuid,
             'summary' => $summary,
+        ];
+    }
+
+    /**
+     * Get a summary of the document identified by file_id.
+     */
+    #[McpTool(name: 'get_markdown', description: 'Get the markdown content of the document identified by file_uuid. This tool is useful for retrieving the markdown representation of a document.')]
+    public function getMarkdown(string $file_uuid): array
+    {
+        $markdown = File::where('uuid', $file_uuid)
+            ->get()
+            ->first()
+            ->markdown;
+        
+        return [
+            'uuid' => $file_uuid,
+            'markdown' => $markdown ?: 'No markdown content available for this file.',
         ];
     }
 }
