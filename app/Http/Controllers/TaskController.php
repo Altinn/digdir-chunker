@@ -127,35 +127,4 @@ class TaskController extends Controller
     {
         return new TaskResource($task);
     }
-
-    private function averageProcessingTimePerPage()
-    {
-        $sql = "SELECT 
-                    SUM(page_counts.pages * (TIMESTAMPDIFF(SECOND, t.started_at, t.finished_at) / page_counts.pages)) / SUM(page_counts.pages) as weighted_avg_seconds_per_page,
-                    AVG(TIMESTAMPDIFF(SECOND, t.started_at, t.finished_at) / page_counts.pages) as simple_avg_seconds_per_page,
-                    COUNT(*) as total_tasks,
-                    SUM(page_counts.pages) as total_pages
-                FROM tasks t
-                JOIN (
-                    SELECT 
-                        file_id,
-                        MAX(CAST(page_num AS UNSIGNED)) + 1 as pages
-                    FROM chunks
-                    CROSS JOIN JSON_TABLE(
-                        page_numbers,
-                        '$[*]' COLUMNS (page_num VARCHAR(10) PATH '$')
-                    ) jt
-                    WHERE file_id IS NOT NULL 
-                        AND page_numbers IS NOT NULL 
-                        AND JSON_VALID(page_numbers)
-                    GROUP BY file_id
-                ) page_counts ON t.id = page_counts.file_id
-                WHERE t.started_at IS NOT NULL 
-                    AND t.finished_at IS NOT NULL 
-                    AND t.task_status = 'Succeeded';";
-
-        $result = \DB::select($sql);
-
-        return $result[0]->weighted_avg_seconds_per_page;
-    }
 }

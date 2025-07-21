@@ -12,6 +12,14 @@ class Chunk extends Model
 
     protected $guarded = [];
 
+    protected $searchable = [
+        'id',
+        'file_id',
+        'content',
+        'chunk_type',
+        'page_numbers',
+    ];
+
     protected $casts = [
         'page_numbers' => 'array',
         'chunk_type' => ChunkType::class,

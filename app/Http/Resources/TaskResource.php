@@ -41,6 +41,10 @@ class TaskResource extends JsonResource
                  */
                 'started_at' => $this->started_at,
                 /**
+                 * The time the task is estimated to be finished processing.
+                 */
+                'estimated_finished_at' => $this->estimated_finished_at,
+                /**
                  * The time the task finished processing.
                  */
                 'finished_at' => $this->finished_at,

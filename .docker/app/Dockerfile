@@ -18,4 +18,3 @@ WORKDIR /var/www/html
 
 COPY .docker/app/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-
