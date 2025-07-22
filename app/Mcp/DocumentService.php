@@ -4,6 +4,7 @@ namespace App\Mcp;
 
 use App\Http\Controllers\TaskController;
 use App\Http\Resources\TaskResource;
+use App\Models\Chunk;
 use App\Models\File;
 use App\Models\Task;
 use PhpMcp\Server\Attributes\{McpResource};
@@ -106,5 +107,14 @@ class DocumentService
             'uuid' => $file_uuid,
             'markdown' => $markdown ?: 'No markdown content available for this file.',
         ];
+    }
+
+    /**
+     * Search for documents based on a query.
+     */
+    #[McpTool(name: 'search_documents', description: 'Search for documents based on a query. This tool allows you to search through indexed documents using a specific query.')]
+    public function searchDocuments(string $query): array
+    {
+        return Chunk::search($query)->get()->toArray();
     }
 }

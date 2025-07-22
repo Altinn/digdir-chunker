@@ -12,14 +12,6 @@ class Chunk extends Model
 
     protected $guarded = [];
 
-    protected $searchable = [
-        'id',
-        'file_id',
-        'content',
-        'chunk_type',
-        'page_numbers',
-    ];
-
     protected $casts = [
         'page_numbers' => 'array',
         'chunk_type' => ChunkType::class,
@@ -28,5 +20,26 @@ class Chunk extends Model
     public static function boot()
     {
         parent::boot();
+    }
+
+    public function toSearchableArray() {
+        $array = $this->toArray();
+
+        // Customize the array as needed for search indexing
+        return [
+            'id' => (int) $array['id'],
+            'file_uuid' => $this->file?->uuid,
+            'chunk_type' => $array['chunk_type'],
+            'page_numbers' => (array) $array['page_numbers'],
+            'text' => $array['text'],
+            'chunk_number' => (int) $array['chunk_number'],
+            'created_at' => $array['created_at'],
+            'updated_at' => $array['updated_at'],
+        ];
+    }
+
+    public function file()
+    {
+        return $this->belongsTo(File::class);
     }
 }
