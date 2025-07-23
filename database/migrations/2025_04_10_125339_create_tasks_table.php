@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('chunk_overlap')->nullable();
             $table->string('task_status')->nullable();
             $table->dateTime('started_at')->nullable();
+            $table->dateTime('estimated_finished_at')->nullable();
             $table->dateTime('finished_at')->nullable();
             $table->dateTime('expires_at')->nullable();
             $table->dateTime('delete_at')->nullable();

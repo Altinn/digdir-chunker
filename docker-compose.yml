@@ -30,7 +30,7 @@ services:
     container_name: digdir-chunker-mariadb
     env_file:
       - .env
-    image: mariadb:11.7
+    image: mariadb:11.8
     restart: unless-stopped
     ports:
       - '${FORWARD_DB_PORT:-3306}:3306'
@@ -43,6 +43,47 @@ services:
     volumes:
       - .docker/db/init:/docker-entrypoint-initdb.d
       - 'mariadb:/var/lib/mysql'
+  minio:
+    container_name: digdir-chunker-minio
+    env_file:
+      - .env
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_MINIO_PORT:-9000}:9000'
+      - '${FORWARD_MINIO_CONSOLE_PORT:-9001}:9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - 'minio:/data'
+    command: server /data --console-address ":9001"
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  meilisearch:
+    image: 'getmeili/meilisearch:v1.15.1'
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: '${MEILISEARCH_MASTER_KEY}'
+    ports:
+      - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
+    volumes:
+      - 'meilisearch:/meili_data'
+    networks:
+      - default
+    healthcheck:
+      test: set -o pipefail;curl -fsS http://localhost:7700/health | grep -q '{"status":"available"}'
+      retries: 3
+      timeout: 5s
 volumes:
   mariadb:
+    driver: local
+  minio:
+    driver: local
+  meilisearch:
     driver: local
