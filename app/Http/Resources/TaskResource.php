@@ -41,6 +41,10 @@ class TaskResource extends JsonResource
                  */
                 'started_at' => $this->started_at,
                 /**
+                 * The time the task is estimated to be finished processing.
+                 */
+                'estimated_finished_at' => $this->estimated_finished_at,
+                /**
                  * The time the task finished processing.
                  */
                 'finished_at' => $this->finished_at,
@@ -60,6 +64,11 @@ class TaskResource extends JsonResource
                  * @example "https://api.example.com/tasks/4490ff5e-3f25-49d9-b6cf-b7a252e96429"
                  */
                 'self' => route('task.show', $this->uuid),
+                /**
+                 * Cancel the task.
+                 * @example "https://api.example.com/tasks/4490ff5e-3f25-49d9-b6cf-b7a252e96429/cancel"
+                 */
+                'cancel' => route('task.cancel', $this->uuid),
             ],
         ];
     }

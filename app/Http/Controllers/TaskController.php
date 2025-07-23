@@ -17,7 +17,7 @@ class TaskController extends Controller
     /**
      * Create a new task
      */
-    public function create(Request $request)
+    public function create(Request $request): TaskResource
     {
         // Validate the request
         $validated = $request->validate([
@@ -98,6 +98,26 @@ class TaskController extends Controller
         ])->dispatch();
 
         return new TaskResource($task);
+    }
+
+    public function cancel(Task $task)
+    {
+        if ($task->task_status === TaskStatus::Succeeded || $task->task_status === TaskStatus::Failed) {
+            return response()->json([
+                'message' => 'Task is already completed or failed, cannot cancel.',
+            ], 422);
+        }
+
+        // Cancel the task
+        $task->task_status = TaskStatus::Cancelled;
+        $task->save();
+
+        // Optionally, you can dispatch a job to clean up resources related to the task
+        // CleanupJob::dispatch($task);
+
+        return response()->json([
+            'message' => 'Task cancelled successfully.',
+        ]);
     }
 
     /**

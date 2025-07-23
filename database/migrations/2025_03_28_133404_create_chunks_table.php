@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('file_id')->nullable();
             $table->string('chunk_type')->default('paragraph')->nullable();
-            $table->text('text')->nullable();
+            $table->longText('text')->nullable();
             $table->integer('chunk_number')->nullable();
             $table->json('page_numbers')->nullable();
             $table->timestamps();

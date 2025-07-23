@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->char('uuid', 36)->unique();
             $table->foreignId('task_id')->index();
-            $table->text('url');
+            $table->longText('url');
             $table->string('sha256')->nullable();
             $table->integer('size')->nullable();
             $table->mediumText('markdown')->nullable();
