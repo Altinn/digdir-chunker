@@ -19,6 +19,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.16",
         "laravel/tinker": "^2.10.1",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "meilisearch/meilisearch-php": "^1.15",
         "php-mcp/laravel": "^3.0",
         "prism-php/prism": "^0.67.0",

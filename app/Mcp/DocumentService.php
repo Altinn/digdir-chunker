@@ -13,6 +13,7 @@ use PhpMcp\Server\Attributes\{McpTool};
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Illuminate\Http\Request;
+use Storage;
 
 class DocumentService
 {
@@ -83,7 +84,7 @@ class DocumentService
         $text = implode('', $chunks);
         $summary = Prism::text()
             ->using(Provider::Anthropic, 'claude-3-7-sonnet-latest')
-            ->withPrompt("Write a short and concise summary of the following text. Ignore image files:\r\n\r\n" . $text)
+            ->withPrompt("Write a short and concise summary of the following text:\r\n\r\n" . $text)
             ->asText()->text;
         
         return [
@@ -116,5 +117,21 @@ class DocumentService
     public function searchDocuments(string $query): array
     {
         return Chunk::search($query)->get()->toArray();
+    }
+
+    #[McpResource(name: 'get_image', description: 'Get an image from the provided URL. This tool can be used to retrieve images stored in the application\'s storage, referenced from the document markdown or other sources.')]
+    public function getImage(string $url): array {
+
+        $parsedUrl = parse_url($url);
+        $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
+        $segments = explode('/', trim($path, '/')); // trim to remove leading/trailing slashes
+        array_shift($segments); // remove the first segment
+        $remainingPath = implode('/', $segments);
+
+        $data = Storage::get($remainingPath);
+
+        return [
+            'image_html_tag' => '<img src="data:image/jpeg;base64,' . base64_encode($data) . '" />',
+        ];
     }
 }
