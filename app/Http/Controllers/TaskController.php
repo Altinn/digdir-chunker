@@ -6,6 +6,8 @@ use App\Enums\TaskStatus;
 use App\Http\Resources\TaskResource;
 use App\Jobs\ChunkFile;
 use App\Jobs\ConvertFileToMarkdown;
+use App\Jobs\GenerateChunkDerivatives;
+use App\Jobs\GenerateEmbeddings;
 use App\Models\File;
 use App\Models\Task;
 use Http;
@@ -95,6 +97,8 @@ class TaskController extends Controller
         Bus::chain([
             new ConvertFileToMarkdown($file),
             new ChunkFile($file, $task->chunking_method, $task->chunk_size, $task->chunk_overlap),
+            new GenerateChunkDerivatives($file),
+            new GenerateEmbeddings($file),
         ])->dispatch();
 
         return new TaskResource($task);

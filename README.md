@@ -79,10 +79,10 @@ Restart the queue (required after code changes that affect jobs)
 docker compose exec app php artisan queue:restart
 ```
 
-Reset the database (delete tables and run migrations again)
+Reset the database (delete tables, run migrations and seed the database with default data)
 
 ```
-docker compose exec app php artisan migrate:refresh
+docker compose exec app php artisan migrate:refresh --seed
 ```
 
 List all available commands:

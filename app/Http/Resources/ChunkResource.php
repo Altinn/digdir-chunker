@@ -36,6 +36,10 @@ class ChunkResource extends JsonResource
              * @example "415"
              */
             'chunk_number' => $this->chunk_number,
+            /**
+             * @example "415"
+             */
+            'derivatives' => ChunkDerivativeSearchResource::collection($this->derivatives) ?: [],
         ];
     }
 }

@@ -47,4 +47,10 @@ return [
             'url' => env('VOYAGEAI_URL', 'https://api.voyageai.com/v1'),
         ],
     ],
+
+    'embeddings_provider' => env('EMBEDDINGS_PROVIDER', 'Ollama'),
+    'embeddings_model' => env('EMBEDDINGS_MODEL', 'snowflake-arctic-embed2'),
+
+    'completions_provider' => env('COMPLETIONS_PROVIDER', 'OpenAI'),
+    'completions_model' => env('COMPLETIONS_MODEL', 'gpt-4.1'),
 ];

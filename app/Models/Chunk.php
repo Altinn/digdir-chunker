@@ -33,6 +33,10 @@ class Chunk extends Model
             'page_numbers' => (array) $array['page_numbers'],
             'text' => $array['text'],
             'chunk_number' => (int) $array['chunk_number'],
+            'derivatives' => $this->derivatives->map(fn($derivative) => [
+                'type' => $derivative->type,
+                'content' => $derivative->content,
+            ])->toArray(),
             'created_at' => $array['created_at'],
             'updated_at' => $array['updated_at'],
         ];
@@ -41,5 +45,15 @@ class Chunk extends Model
     public function file()
     {
         return $this->belongsTo(File::class);
+    }
+
+    public function embeddings()
+    {
+        return $this->morphMany(Embedding::class, 'embeddable');
+    }
+
+    public function derivatives()
+    {
+        return $this->hasMany(ChunkDerivative::class);
     }
 }
