@@ -11,6 +11,7 @@ use App\Jobs\GenerateEmbeddings;
 use App\Models\File;
 use App\Models\Task;
 use Http;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
 
@@ -19,7 +20,7 @@ class TaskController extends Controller
     /**
      * Create a new task
      */
-    public function create(Request $request): TaskResource
+    public function create(Request $request): TaskResource|JsonResponse
     {
         // Validate the request
         $validated = $request->validate([
