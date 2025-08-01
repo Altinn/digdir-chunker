@@ -8,6 +8,7 @@ use App\Jobs\ChunkFile;
 use App\Jobs\ConvertFileToMarkdown;
 use App\Jobs\GenerateChunkDerivatives;
 use App\Jobs\GenerateEmbeddings;
+use App\Models\Chunk;
 use App\Models\File;
 use App\Models\Task;
 use Http;
@@ -105,6 +106,9 @@ class TaskController extends Controller
         return new TaskResource($task);
     }
 
+    /**
+     * Cancel a task
+     */
     public function cancel(Task $task)
     {
         if ($task->task_status === TaskStatus::Succeeded || $task->task_status === TaskStatus::Failed) {
@@ -122,6 +126,31 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Task cancelled successfully.',
+        ]);
+    }
+
+    /**
+     * Delete a task
+     * 
+     * @param \App\Models\Task $task
+     * @return JsonResponse
+     */
+    public function delete(Task $task)
+    {
+        if ($task->task_status === TaskStatus::Processing) {
+            return response()->json([
+                'message' => 'Task cannot be deleted if it is processing.',
+            ], 422);
+        }
+
+        // Delete the task and its associated data
+        Chunk::where('task_id', $task->id)->delete();
+        $file = $task->file;
+        $task->delete();
+        $file?->delete();
+
+        return response()->json([
+            'message' => 'Task and associated file deleted successfully.',
         ]);
     }
 
