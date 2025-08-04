@@ -20,14 +20,15 @@ class GenerateChunkDerivatives implements ShouldQueue
 
     public function handle(): void
     {
-        $activePrompts = Prompt::where('is_active', true)->get();
+        $prompts = Prompt::whereIn('name', [
+            'default_summarize',
+            'default_create_questions',
+            // 'default_extract_metadata',
+        ])->get();
 
-        foreach ($this->file->chunks as $chunk) {
-            foreach ($activePrompts as $prompt) {
-                // Skip if derivative already exists for this chunk and prompt
-                if ($chunk->derivatives()->where('prompt_id', $prompt->id)->exists()) {
-                    continue;
-                }
+        foreach ($prompts as $prompt) {
+            
+            foreach ($this->file->chunks as $chunk) {
 
                 $generatedContent = $this->generateContent($chunk->text, $prompt);
                 
@@ -37,7 +38,7 @@ class GenerateChunkDerivatives implements ShouldQueue
                 foreach ($generatedContent as $content) {
                      $chunk->derivatives()->create([
                         'prompt_id' => $prompt->id,
-                        'type' => $prompt->type,
+                        'type' => $prompt->type ?? null,
                         'content' => $content,
                         'llm_provider' => $prompt->llm_provider,
                         'llm_model' => $prompt->llm_model,

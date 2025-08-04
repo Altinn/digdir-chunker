@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('prompts', function (Blueprint $table) {
             $table->id();
             $table->string('name')->index();
+            $table->string('type')->index()->nullable();
             $table->string('llm_provider')->nullable()->default(config('prism.completions_provider'));
             $table->string('llm_model')->nullable()->default(config('prism.completions_model')) ;
-            $table->text('content');
-            $table->string('type')->index();
+            $table->text('content')->nullable();
             $table->integer('version')->nullable();
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

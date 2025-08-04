@@ -99,8 +99,8 @@ class TaskController extends Controller
         Bus::chain([
             new ConvertFileToMarkdown($file),
             new ChunkFile($file, $task->chunking_method, $task->chunk_size, $task->chunk_overlap),
-            new GenerateChunkDerivatives($file),
-            new GenerateEmbeddings($file),
+            // new GenerateChunkDerivatives($file),
+            // new GenerateEmbeddings($file),
         ])->dispatch();
 
         return new TaskResource($task);
