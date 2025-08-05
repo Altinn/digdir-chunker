@@ -136,8 +136,8 @@ private function uploadExtractedImages(TemporaryDirectory $directory): void
                 Log::error("Failed to upload image: {$filename}");
             }
             
-        } catch (\Exception $e) {
-            Log::error("Error uploading image {$filename}: " . $e->getMessage());
+        } catch (\Exception $e ) {
+            Log::error("Error uploading image: " . $e->getMessage());
         }
     }
 
