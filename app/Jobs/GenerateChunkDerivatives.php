@@ -13,6 +13,11 @@ class GenerateChunkDerivatives implements ShouldQueue
 {
     use Queueable;
 
+    /**
+     * The number of seconds the job can run before timing out.
+     */
+    public int $timeout = 7200;
+
     public function __construct(
         public File $file
     ) {
