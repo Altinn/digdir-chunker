@@ -96,12 +96,22 @@ class TaskController extends Controller
         $file->save();
 
         // Dispatch jobs to process the file
-        Bus::chain([
+        $jobs = [
             new ConvertFileToMarkdown($file),
             new ChunkFile($file, $task->chunking_method, $task->chunk_size, $task->chunk_overlap),
-            // new GenerateChunkDerivatives($file),
-            // new GenerateEmbeddings($file),
-        ])->dispatch();
+            
+            new GenerateEmbeddings($file),
+        ];
+
+        if ( config('app.enable_chunk_derivatives') ) {
+            $jobs[] = new GenerateChunkDerivatives($file);
+        }
+
+        if ( config('app.enable_chunk_embeddings') ) {
+            $jobs[] = new GenerateEmbeddings($file);
+        }
+
+        Bus::chain($jobs)->dispatch();
 
         return new TaskResource($task);
     }

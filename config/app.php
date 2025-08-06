@@ -125,4 +125,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'enable_chunk_derivatives' => env('APP_ENABLE_CHUNK_DERIVATIVES', true),
+    'enable_chunk_embeddings' => env('APP_ENABLE_CHUNK_EMBEDDINGS', true),
 ];
