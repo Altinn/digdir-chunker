@@ -35,7 +35,7 @@ class GenerateChunkDerivatives implements ShouldQueue
             
             foreach ($this->file->chunks as $chunk) {
 
-                $generatedContent = trim("`json", $this->generateContent($chunk->text, $prompt));
+                $generatedContent = trim($this->generateContent($chunk->text, $prompt), "`json");
                 
                 // Check if the generated content is an array or a single string
                 $generatedContent = (is_array(json_decode($generatedContent))) ? json_decode($generatedContent) : [(string) $generatedContent];
