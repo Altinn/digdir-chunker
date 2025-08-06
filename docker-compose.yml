@@ -80,10 +80,23 @@ services:
       test: set -o pipefail;curl -fsS http://localhost:7700/health | grep -q '{"status":"available"}'
       retries: 3
       timeout: 5s
+  ollama:
+    container_name: digdir-chunker-ollama
+    build:
+      context: .
+      dockerfile: ./.docker/ollama/Dockerfile
+    image: ollama/ollama:latest
+    ports:
+      - '${FORWARD_OLLAMA_PORT:-11434}:11434'
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
 volumes:
   mariadb:
     driver: local
   minio:
     driver: local
   meilisearch:
+    driver: local
+  ollama:
     driver: local
