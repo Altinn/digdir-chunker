@@ -20,7 +20,7 @@ class DefaultPromptsSeeder extends Seeder
                 'llm_provider' => config('prism.completions_provider'),
                 'llm_model' => config('prism.completions_model'),
                 'version' => 1,
-                'content' => 'Which questions does the following content answer? Write the questions as if they were search queries in a large database. Please provide a list of questions that cover the main points and details of the content. Maximum 7 questions. Only write questions that would be useful in a search index to find the original content. Write the questions in the same language as the content. Respond with a JSON array of the questions, and no additional text.',
+                'content' => 'Which questions does the following content answer? Write short questions as if they were search queries for searching a large database. Please provide a list of questions that cover the main points and details of the content. Maximum 3 questions. Only write questions that would be useful in a search index to find the original content. Write the questions in the same language as the content. Respond with a JSON array of the questions, and no additional text.',
             ],
             [
                 'name' => 'default_summarize',
