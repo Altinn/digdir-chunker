@@ -20,6 +20,7 @@ class Task extends Model
         'conversion_backend' => ConversionBackend::class,
         'chunking_method' => ChunkingMethod::class,
         'task_status' => TaskStatus::class,
+        'metadata' => 'array',
     ];
 
     protected $dates = [

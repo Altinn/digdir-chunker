@@ -13,6 +13,10 @@ class File extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'metadata' => 'array',
+    ];
+
     public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class);

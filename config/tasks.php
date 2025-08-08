@@ -58,7 +58,29 @@ return [
     |
     */
 
-    'default_deletion_delay_MINUTES' => env('TASKS_DEFAULT_DELETION_DELAY_MINUTES', 24*60*30), // 30 days
+    'default_deletion_delay_minutes' => env('TASKS_DEFAULT_DELETION_DELAY_MINUTES', 24*60*30), // 30 days
 
+    /*
+    |--------------------------------------------------------------------------
+    | Generate chunk derivatives
+    |--------------------------------------------------------------------------
+    |
+    | Whether to automatically generate chunk derivatives (summaries, etc.) 
+    | when processing documents.
+    |
+    */
+
+    'generate_chunk_derivatives' => env('TASKS_GENERATE_CHUNK_DERIVATIVES', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Generate embeddings
+    |--------------------------------------------------------------------------
+    |
+    | Whether to automatically generate embeddings for chunks when processing documents.
+    |
+    */
+
+    'generate_embeddings' => env('TASKS_GENERATE_EMBEDDINGS', false),
 
 ];
