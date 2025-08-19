@@ -26,25 +26,23 @@ class Chunk extends Model
     {
         $array = $this->toArray();
 
-        // Customize the array as needed for search indexing
+        // Flatten the array for search indexing
         return [
             'id' => (int) $array['id'],
-            'file' => [
-                'uuid' => $this->file?->uuid,
-                'title' => $this->file?->title,
-                'subtitle' => $this->file?->subtitle,
-                'authors' => $this->file?->authors,
-                'owners' => $this->file?->owners,
-                'recipients' => $this->file?->recipients,
-                'publishers' => $this->file?->publishers,
-                'authoring_actors' => $this->file?->authoring_actors,
-                'isbn' => $this->file?->isbn,
-                'issn' => $this->file?->issn,
-                'type' => $this->file?->type,
-                'conerned_year' =>  $this->file?->concerned_year,
-                'source_document_url' =>  $this->file?->source_document_url,
-                'published_date' => $this->file?->published_date,
-            ],
+            'file_uuid' => $this->file?->uuid,
+            'file_title' => $this->file?->title,
+            'file_subtitle' => $this->file?->subtitle,
+            'file_authors' => $this->file?->authors,
+            'file_owners' => $this->file?->owners,
+            'file_recipients' => $this->file?->recipients,
+            'file_publishers' => $this->file?->publishers,
+            'file_authoring_actors' => $this->file?->authoring_actors,
+            'file_isbn' => $this->file?->isbn,
+            'file_issn' => $this->file?->issn,
+            'file_type' => $this->file?->type,
+            'file_concerned_year' => $this->file?->concerned_year,
+            'file_source_document_url' => $this->file?->source_document_url,
+            'file_published_date' => $this->file?->published_date,
             'chunk_type' => $array['chunk_type'],
             'page_numbers' => (array) $array['page_numbers'],
             'text' => $array['text'],

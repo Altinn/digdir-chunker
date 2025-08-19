@@ -227,6 +227,9 @@ class ChunkerService
                 }
             }
 
+            // Add 1 to each page number in order to match the document's actual page numbering
+            $page_numbers = array_map(fn($n) => $n + 1, $page_numbers);
+
             $chunks_with_page_numbers[] = [
                 'text' => trim($chunk), // Clean up the chunk text
                 'page_numbers' => $page_numbers, // Array of page numbers as integers

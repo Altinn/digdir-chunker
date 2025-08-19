@@ -141,8 +141,8 @@ return [
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
             'chunks' => [
-                'filterableAttributes'=> ['file.owners', 'file.type', 'file.concerned_year'],
-                'sortableAttributes' => ['file.published_date'],
+                'filterableAttributes'=> ['file_type', 'file_owners', 'file_publishers', 'file_recipients', 'file_authoring_actors', 'file_concerned_year', 'file_isbn', 'file_issn'],
+                'sortableAttributes' => ['file_published_date'],
             ],
         ],
     ],
