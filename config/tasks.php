@@ -47,7 +47,6 @@ return [
     */
 
     'default_chunk_overlap' => env('TASKS_DEFAULT_CHUNK_OVERLAP', 256),
-    
 
     /*
     |--------------------------------------------------------------------------
@@ -58,14 +57,14 @@ return [
     |
     */
 
-    'default_deletion_delay_minutes' => env('TASKS_DEFAULT_DELETION_DELAY_MINUTES', 24*60*30), // 30 days
+    'default_deletion_delay_minutes' => env('TASKS_DEFAULT_DELETION_DELAY_MINUTES', 24 * 60 * 30), // 30 days
 
     /*
     |--------------------------------------------------------------------------
     | Generate chunk derivatives
     |--------------------------------------------------------------------------
     |
-    | Whether to automatically generate chunk derivatives (summaries, etc.) 
+    | Whether to automatically generate chunk derivatives (summaries, etc.)
     | when processing documents.
     |
     */

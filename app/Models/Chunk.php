@@ -22,18 +22,33 @@ class Chunk extends Model
         parent::boot();
     }
 
-    public function toSearchableArray() {
+    public function toSearchableArray()
+    {
         $array = $this->toArray();
 
         // Customize the array as needed for search indexing
         return [
             'id' => (int) $array['id'],
-            'file_uuid' => $this->file?->uuid,
+            'file' => [
+                'uuid' => $this->file?->uuid,
+                'title' => $this->file?->title,
+                'subtitle' => $this->file?->subtitle,
+                'authors' => $this->file?->authors,
+                'owners' => $this->file?->owners,
+                'recipients' => $this->file?->recipients,
+                'publishers' => $this->file?->publishers,
+                'authoring_actors' => $this->file?->authoring_actors,
+                'isbn' => $this->file?->isbn,
+                'issn' => $this->file?->issn,
+                'type' => $this->file?->type,
+                'conerned_year' =>  $this->file?->concerned_year,
+                'source_document_url' =>  $this->file?->source_document_url,
+            ],
             'chunk_type' => $array['chunk_type'],
             'page_numbers' => (array) $array['page_numbers'],
             'text' => $array['text'],
             'chunk_number' => (int) $array['chunk_number'],
-            'derivatives' => $this->derivatives->map(fn($derivative) => [
+            'derivatives' => $this->derivatives->map(fn ($derivative) => [
                 'type' => $derivative->type,
                 'content' => $derivative->content,
             ])->toArray(),

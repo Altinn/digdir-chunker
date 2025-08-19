@@ -20,8 +20,7 @@ class GenerateChunkDerivatives implements ShouldQueue
 
     public function __construct(
         public File $file
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {
@@ -32,16 +31,16 @@ class GenerateChunkDerivatives implements ShouldQueue
         ])->get();
 
         foreach ($prompts as $prompt) {
-            
+
             foreach ($this->file->chunks as $chunk) {
 
-                $generatedContent = trim($this->generateContent($chunk->text, $prompt), "`json");
-                
+                $generatedContent = trim($this->generateContent($chunk->text, $prompt), '`json');
+
                 // Check if the generated content is an array or a single string
                 $generatedContent = (is_array(json_decode($generatedContent))) ? json_decode($generatedContent) : [(string) $generatedContent];
 
                 foreach ($generatedContent as $content) {
-                     $chunk->derivatives()->create([
+                    $chunk->derivatives()->create([
                         'prompt_id' => $prompt->id,
                         'type' => $prompt->type ?? null,
                         'content' => $content,
@@ -55,10 +54,10 @@ class GenerateChunkDerivatives implements ShouldQueue
 
     private function generateContent(string $chunkText, Prompt $prompt): string
     {
-       return Prism::text()
+        return Prism::text()
             ->using(Provider::{$prompt->llm_provider}, $prompt->llm_model)
-            // ->withSystemPrompt()
-            ->withPrompt($prompt->content . ":\r\n\r\n" . $chunkText)
+             // ->withSystemPrompt()
+            ->withPrompt($prompt->content.":\r\n\r\n".$chunkText)
             ->asText()
             ->text;
     }

@@ -12,7 +12,7 @@ class FileController extends Controller
     {
         $path = "files/{$uuid}/images/{$filename}";
 
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             abort(404);
         }
 
@@ -22,7 +22,7 @@ class FileController extends Controller
             echo Storage::get($path);
         }, 200, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            'Content-Disposition' => 'inline; filename="'.basename($path).'"',
         ]);
     }
 }

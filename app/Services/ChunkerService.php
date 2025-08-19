@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 class ChunkerService
@@ -8,9 +9,7 @@ class ChunkerService
      * preserving semantic blocks (headings+paragraphs, lists, code blocks, tables)
      * as best as possible.
      *
-     * @param string $markdown
-     * @param int    $maxSize
-     * @param bool   $allowSemanticOverflow Whether to allow tables and lists to exceed maxSize
+     * @param  bool  $allowSemanticOverflow  Whether to allow tables and lists to exceed maxSize
      * @return string[] Array of chunk strings
      */
     public static function chunkSemantic(string $markdown, int $maxSize, bool $allowSemanticOverflow = true): array
@@ -43,19 +42,20 @@ class ChunkerService
             // If it's a semantic block and we allow overflow, never split it
             if ($isSemanticBlock && $allowSemanticOverflow) {
                 // If we have content in current chunk, flush it first
-                if (!empty(trim($currentChunk))) {
+                if (! empty(trim($currentChunk))) {
                     $chunks[] = trim($currentChunk);
                     $currentChunk = '';
                 }
                 // Add the semantic block as its own chunk, regardless of size
                 $chunks[] = trim($block);
+
                 continue;
             }
 
             // If the block alone exceeds max size, we have to split it.
             if (strlen($block) > $maxSize) {
                 // Close off any existing chunk (if not empty) before we chunk the big block
-                if (!empty(trim($currentChunk))) {
+                if (! empty(trim($currentChunk))) {
                     $chunks[] = trim($currentChunk);
                     $currentChunk = '';
                 }
@@ -64,40 +64,40 @@ class ChunkerService
                 // but we have to do it if the single block is too large.
                 $subBlocks = self::splitLargeBlock($block, $maxSize);
                 foreach ($subBlocks as $sb) {
-                    if (!empty(trim($sb))) {
+                    if (! empty(trim($sb))) {
                         $chunks[] = trim($sb);
                     }
                 }
+
                 continue;
             }
 
             // If adding this block to the current chunk exceeds $maxSize, start a new chunk
             $separator = empty($currentChunk) ? '' : "\n\n";
-            if (strlen($currentChunk . $separator . $block) > $maxSize) {
-                if (!empty(trim($currentChunk))) {
+            if (strlen($currentChunk.$separator.$block) > $maxSize) {
+                if (! empty(trim($currentChunk))) {
                     $chunks[] = trim($currentChunk);
                 }
                 $currentChunk = $block;
             } else {
                 // Append to the current chunk
-                $currentChunk .= $separator . $block;
+                $currentChunk .= $separator.$block;
             }
         }
 
         // Add any trailing content
-        if (!empty(trim($currentChunk))) {
+        if (! empty(trim($currentChunk))) {
             $chunks[] = trim($currentChunk);
         }
 
         // Filter out any empty chunks that might have slipped through
-        return array_values(array_filter($chunks, fn($chunk) => !empty(trim($chunk))));
+        return array_values(array_filter($chunks, fn ($chunk) => ! empty(trim($chunk))));
     }
 
     /**
      * Roughly split the markdown by blank lines, returning an array of “raw blocks”.
      * Each entry is a group of lines separated by blank lines.
      *
-     * @param string $markdown
      * @return string[] raw blocks
      */
     public static function splitIntoBlocks(string $markdown): array
@@ -108,7 +108,8 @@ class ChunkerService
 
         // Trim each block
         $parts = array_map('trim', $parts);
-        return array_filter($parts, fn($p) => $p !== '');
+
+        return array_filter($parts, fn ($p) => $p !== '');
     }
 
     /**
@@ -116,7 +117,7 @@ class ChunkerService
      * For instance, a heading block followed by a paragraph block,
      * or lines that form a single table or list.
      *
-     * @param string[] $rawBlocks
+     * @param  string[]  $rawBlocks
      * @return string[] logical blocks
      */
     public static function mergeLogicalBlocks(array $rawBlocks): array
@@ -126,17 +127,16 @@ class ChunkerService
 
         for ($i = 0; $i < $count; $i++) {
             $current = $rawBlocks[$i];
-            $next    = $rawBlocks[$i+1] ?? null;
+            $next = $rawBlocks[$i + 1] ?? null;
 
             // If the current block is a heading and next block is not a heading,
             // combine them, so we keep “heading + paragraph” in one block.
-            if (self::isHeading($current) && $next !== null && !self::isHeading($next)) {
+            if (self::isHeading($current) && $next !== null && ! self::isHeading($next)) {
                 // Merge them
-                $merged[] = $current . "\n\n" . $next;
+                $merged[] = $current."\n\n".$next;
                 // Skip the next block since we've merged
                 $i++;
-            }
-            else {
+            } else {
                 $merged[] = $current;
             }
         }
@@ -150,9 +150,6 @@ class ChunkerService
 
     /**
      * Check if the block is just a heading line (e.g. starts with '#' or '##' etc).
-     *
-     * @param string $block
-     * @return bool
      */
     public static function isHeading(string $block): bool
     {
@@ -161,6 +158,7 @@ class ChunkerService
         if (count($lines) === 1 && preg_match('/^#{1,6}\s+.+/', $lines[0])) {
             return true;
         }
+
         return false;
     }
 
@@ -168,8 +166,6 @@ class ChunkerService
      * If a single block alone exceeds $maxSize, we must split it.
      * This is a simple fallback that splits by lines until each piece <= $maxSize.
      *
-     * @param string $block
-     * @param int    $maxSize
      * @return string[]
      */
     public static function splitLargeBlock(string $block, int $maxSize): array
@@ -179,7 +175,7 @@ class ChunkerService
             return [$block];
         }
 
-        $lines  = explode("\n", $block);
+        $lines = explode("\n", $block);
         $result = [];
         $buffer = '';
 
@@ -189,10 +185,10 @@ class ChunkerService
                 $result[] = rtrim($buffer, "\n");
                 $buffer = '';
             }
-            $buffer .= $line . "\n";
+            $buffer .= $line."\n";
         }
 
-        if (!empty(trim($buffer))) {
+        if (! empty(trim($buffer))) {
             $result[] = rtrim($buffer, "\n");
         }
 
@@ -201,8 +197,7 @@ class ChunkerService
 
     /**
      * Add page numbers to chunks
-     * 
-     * @param array $chunks
+     *
      * @return array{page_number: mixed, text: mixed[]}
      */
     public static function parsePageNumbers(array $chunks): array
@@ -210,19 +205,19 @@ class ChunkerService
         $chunks_with_page_numbers = [];
         $pattern = '/\{(\d+)\}(\-+)/'; // Matches page numbers like {123}--
         $last_page_number = null;
-    
+
         foreach ($chunks as $chunk) {
             $page_numbers = [];
             $matches = [];
-    
+
             // Find all page number markers in the chunk
             preg_match_all($pattern, $chunk, $matches);
-    
-            if (!empty($matches[1])) {
+
+            if (! empty($matches[1])) {
                 // Collect all matched page numbers and cast them to integers
                 $page_numbers = array_map('intval', $matches[1]);
                 $last_page_number = end($page_numbers); // Update the last detected page number
-    
+
                 // Remove all page number markers from the chunk text
                 $chunk = preg_replace($pattern, '', $chunk);
             } else {
@@ -231,13 +226,13 @@ class ChunkerService
                     $page_numbers[] = (int) $last_page_number;
                 }
             }
-    
+
             $chunks_with_page_numbers[] = [
                 'text' => trim($chunk), // Clean up the chunk text
                 'page_numbers' => $page_numbers, // Array of page numbers as integers
             ];
         }
-    
+
         return $chunks_with_page_numbers;
     }
 
@@ -246,11 +241,11 @@ class ChunkerService
      * preferring to split at the earliest possible separator in the list,
      * and allowing for a maximum overlap between consecutive chunks.
      *
-     * @param string $text The text to split.
-     * @param int $chunkSize The maximum size of each chunk.
-     * @param int $chunkOverlap The maximum number of characters to overlap between chunks.
-     * @param array|null $separators List of separators to split on, in order of priority.
-     *                               Defaults to ["\n\n", "\n", " ", ""].
+     * @param  string  $text  The text to split.
+     * @param  int  $chunkSize  The maximum size of each chunk.
+     * @param  int  $chunkOverlap  The maximum number of characters to overlap between chunks.
+     * @param  array|null  $separators  List of separators to split on, in order of priority.
+     *                                  Defaults to ["\n\n", "\n", " ", ""].
      * @return string[] Array of chunked strings.
      */
     public static function chunkRecursive(
@@ -260,7 +255,7 @@ class ChunkerService
         ?array $separators = null
     ): array {
         if ($separators === null) {
-            $separators = ["\n\n", "\n", " ", ""];
+            $separators = ["\n\n", "\n", ' ', ''];
         }
 
         // Base case: text is already short enough or no more separators to try
@@ -272,7 +267,7 @@ class ChunkerService
         $restSeparators = array_slice($separators, 1);
 
         // If separator is empty string, fallback to hard split with overlap
-        if ($separator === "") {
+        if ($separator === '') {
             $chunks = [];
             $offset = 0;
             $len = mb_strlen($text);
@@ -286,39 +281,40 @@ class ChunkerService
                 // Overlap: move offset forward by chunkSize - chunkOverlap
                 $offset += max($chunkSize - $chunkOverlap, 1);
             }
+
             return array_map('trim', $chunks);
         }
 
         // Split by the current separator
         $splits = explode($separator, $text);
         $chunks = [];
-        $currentChunk = "";
+        $currentChunk = '';
 
         foreach ($splits as $i => $split) {
             // Add separator back except for the first split
-            $piece = ($i === 0) ? $split : $separator . $split;
+            $piece = ($i === 0) ? $split : $separator.$split;
 
-            if (mb_strlen($currentChunk . $piece) > $chunkSize) {
-                if (!empty($currentChunk)) {
+            if (mb_strlen($currentChunk.$piece) > $chunkSize) {
+                if (! empty($currentChunk)) {
                     // Recursively split the current chunk if it's too big
                     $subChunks = self::chunkRecursive($currentChunk, $chunkSize, $chunkOverlap, $restSeparators);
                     // Add overlap if needed
-                    if ($chunkOverlap > 0 && !empty($chunks) && !empty($subChunks)) {
+                    if ($chunkOverlap > 0 && ! empty($chunks) && ! empty($subChunks)) {
                         $lastChunk = end($chunks);
                         $overlap = mb_substr($lastChunk, -$chunkOverlap);
-                        $subChunks[0] = $overlap . $subChunks[0];
+                        $subChunks[0] = $overlap.$subChunks[0];
                     }
                     $chunks = array_merge($chunks, $subChunks);
-                    $currentChunk = "";
+                    $currentChunk = '';
                 }
                 // If the piece itself is too big, split it recursively
                 if (mb_strlen($piece) > $chunkSize) {
                     $subChunks = self::chunkRecursive($piece, $chunkSize, $chunkOverlap, $restSeparators);
                     // Add overlap if needed
-                    if ($chunkOverlap > 0 && !empty($chunks) && !empty($subChunks)) {
+                    if ($chunkOverlap > 0 && ! empty($chunks) && ! empty($subChunks)) {
                         $lastChunk = end($chunks);
                         $overlap = mb_substr($lastChunk, -$chunkOverlap);
-                        $subChunks[0] = $overlap . $subChunks[0];
+                        $subChunks[0] = $overlap.$subChunks[0];
                     }
                     $chunks = array_merge($chunks, $subChunks);
                 } else {
@@ -329,18 +325,18 @@ class ChunkerService
             }
         }
 
-        if (!empty($currentChunk)) {
+        if (! empty($currentChunk)) {
             // Add overlap if needed
-            if ($chunkOverlap > 0 && !empty($chunks)) {
+            if ($chunkOverlap > 0 && ! empty($chunks)) {
                 $lastChunk = end($chunks);
                 $overlap = mb_substr($lastChunk, -$chunkOverlap);
-                $currentChunk = $overlap . $currentChunk;
+                $currentChunk = $overlap.$currentChunk;
             }
             $chunks[] = trim($currentChunk);
         }
 
         // Remove any empty chunks
-        return array_values(array_filter(array_map('trim', $chunks), fn($c) => $c !== ""));
+        return array_values(array_filter(array_map('trim', $chunks), fn ($c) => $c !== ''));
     }
 
     /**
@@ -352,7 +348,7 @@ class ChunkerService
         $lines = explode("\n", $block);
         $hasPipe = false;
         $hasDash = false;
-        
+
         foreach ($lines as $line) {
             if (strpos($line, '|') !== false) {
                 $hasPipe = true;
@@ -361,6 +357,7 @@ class ChunkerService
                 $hasDash = true;
             }
         }
+
         return $hasPipe && $hasDash;
     }
 
@@ -372,7 +369,7 @@ class ChunkerService
     {
         $lines = explode("\n", trim($block));
         $listLines = 0;
-        
+
         foreach ($lines as $line) {
             $trimmed = trim($line);
             // Check for unordered list markers (-, *, +)
@@ -388,7 +385,7 @@ class ChunkerService
                 $listLines++;
             }
         }
-        
+
         // Consider it a list if at least 2 lines are list items
         return $listLines >= 2;
     }

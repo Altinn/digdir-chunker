@@ -8,9 +8,9 @@ use App\Enums\TaskStatus;
 use App\Models\Chunk;
 use App\Models\File;
 use App\Services\ChunkerService;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Carbon\Carbon;
 use Log;
 
 class ChunkFile implements ShouldQueue
@@ -43,12 +43,12 @@ class ChunkFile implements ShouldQueue
     {
         $file = $this->file;
 
-        $content = $file->markdown ?? "";
+        $content = $file->markdown ?? '';
 
-        if ( empty($file->markdown) )
-        {
-            Log::error("File does not have markdown content: " . $file->id);
+        if (empty($file->markdown)) {
+            Log::error('File does not have markdown content: '.$file->id);
             $this->file->task->task_status = TaskStatus::Failed;
+
             return;
         }
 
@@ -65,8 +65,7 @@ class ChunkFile implements ShouldQueue
 
         $chunks = ChunkerService::parsePageNumbers($chunk_arrays);
 
-        foreach ($chunks as $key => $chunk_array)
-        {
+        foreach ($chunks as $key => $chunk_array) {
             Chunk::create([
                 'text' => $chunk_array['text'],
                 'chunk_type' => ChunkType::Paragraph,
@@ -83,13 +82,10 @@ class ChunkFile implements ShouldQueue
 
     /**
      * Handles job failure.
-     * 
-     * @param \Throwable $exception
-     * @return void
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("ChunkFile job failed for file ID {$this->file->id}: " . $exception->getMessage());
+        Log::error("ChunkFile job failed for file ID {$this->file->id}: ".$exception->getMessage());
         $this->file->task->task_status = TaskStatus::Failed;
         $this->file->task->save();
     }

@@ -21,6 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('viewApiDocs', fn(User $user) => true);
+        Gate::define('viewApiDocs', fn (User $user) => true);
     }
 }

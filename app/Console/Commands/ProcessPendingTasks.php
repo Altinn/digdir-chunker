@@ -25,8 +25,8 @@ class ProcessPendingTasks extends Command
         $this->info('Finding pending tasks to process...');
 
         $query = Task::where('task_status', TaskStatus::Pending)
-                     ->whereHas('file') // Only process tasks that have an associated file
-                     ->with('file');
+            ->whereHas('file') // Only process tasks that have an associated file
+            ->with('file');
 
         if ($source = $this->option('source')) {
             $query->where('external_source', $source);
@@ -34,11 +34,12 @@ class ProcessPendingTasks extends Command
 
         $limit = (int) $this->option('limit');
         $tasks = $query->orderBy('created_at', 'asc') // Process oldest first
-                      ->limit($limit)
-                      ->get();
+            ->limit($limit)
+            ->get();
 
         if ($tasks->isEmpty()) {
             $this->info('No pending tasks found.');
+
             return 0;
         }
 
@@ -46,6 +47,7 @@ class ProcessPendingTasks extends Command
 
         if ($this->option('dry-run')) {
             $this->displayTasks($tasks);
+
             return 0;
         }
 
@@ -59,21 +61,22 @@ class ProcessPendingTasks extends Command
                 $this->info("Processing task {$task->id}: {$this->getTaskDescription($task)}");
             } catch (\Exception $e) {
                 $failed++;
-                $this->error("Failed to process task {$task->id}: " . $e->getMessage());
-                
+                $this->error("Failed to process task {$task->id}: ".$e->getMessage());
+
                 // Update task status to Failed
                 $task->update(['task_status' => TaskStatus::Failed]);
             }
         }
 
         $this->info("Processing complete. Processed: {$processed}, Failed: {$failed}");
+
         return 0;
     }
 
     private function displayTasks($tasks): void
     {
         $tableData = [];
-        
+
         foreach ($tasks as $task) {
             $tableData[] = [
                 $task->id,
@@ -94,9 +97,10 @@ class ProcessPendingTasks extends Command
     {
         if ($task->external_source === 'kudos' && isset($task->metadata['kudos_document']['title'])) {
             $title = $task->metadata['kudos_document']['title'];
-            return substr($title, 0, 40) . (strlen($title) > 40 ? '...' : '');
+
+            return substr($title, 0, 40).(strlen($title) > 40 ? '...' : '');
         }
-        
+
         if ($task->file && isset($task->file->metadata['filename'])) {
             return $task->file->metadata['filename'];
         }
@@ -107,8 +111,8 @@ class ProcessPendingTasks extends Command
     private function processTask(Task $task): void
     {
         $file = $task->file;
-        
-        if (!$file) {
+
+        if (! $file) {
             throw new \Exception("Task {$task->id} has no associated file");
         }
 

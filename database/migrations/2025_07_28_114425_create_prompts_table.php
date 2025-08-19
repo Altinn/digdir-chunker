@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->index();
             $table->string('type')->index()->nullable();
             $table->string('llm_provider')->nullable()->default(config('prism.completions_provider'));
-            $table->string('llm_model')->nullable()->default(config('prism.completions_model')) ;
+            $table->string('llm_model')->nullable()->default(config('prism.completions_model'));
             $table->text('content')->nullable();
             $table->integer('version')->nullable();
             $table->timestamps();

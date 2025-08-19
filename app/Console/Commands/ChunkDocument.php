@@ -3,10 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Prism\Prism\Enums\Provider;
-use Prism\Prism\Prism;
-use Prism\Prism\Schema\ArraySchema;
-use Prism\Prism\Schema\StringSchema;
 
 class ChunkDocument extends Command
 {
@@ -29,8 +25,9 @@ class ChunkDocument extends Command
      */
     public function handle()
     {
-        if ( ! $this->argument('file')) {
+        if (! $this->argument('file')) {
             $this->error('Please provide a file to chunk');
+
             return;
         }
 
@@ -38,11 +35,9 @@ class ChunkDocument extends Command
 
         $chunks = $this->splitMarkdownIntoChunks($string, 1000);
 
-        foreach ($chunks[1] as $chunk)
-        {
-            
+        foreach ($chunks[1] as $chunk) {
+
         }
 
-    
     }
 }

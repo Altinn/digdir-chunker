@@ -58,14 +58,16 @@ class TaskResource extends JsonResource
                 'delete_at' => $this->delete_at,
                 'file' => new FileResource($this->file),
             ],
-            'links' => [ 
+            'links' => [
                 /**
                  * The link to the task resource. Should be used to retrieve the task.
+                 *
                  * @example "https://api.example.com/tasks/4490ff5e-3f25-49d9-b6cf-b7a252e96429"
                  */
                 'self' => route('task.show', $this->uuid),
                 /**
                  * Cancel the task.
+                 *
                  * @example "https://api.example.com/tasks/4490ff5e-3f25-49d9-b6cf-b7a252e96429/cancel"
                  */
                 'cancel' => route('task.cancel', $this->uuid),

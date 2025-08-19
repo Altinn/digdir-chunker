@@ -9,12 +9,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class File extends Model
 {
-    use GeneratesUuid, BindsOnUuid;
+    use BindsOnUuid, GeneratesUuid;
 
     protected $guarded = [];
 
     protected $casts = [
         'metadata' => 'array',
+        'authors' => 'array',
+        'owners' => 'array',
+        'recipients' => 'array',
+        'publishers' => 'array',
+        'authoring_actors' => 'array',
+        'published_date' => 'date',
+        'authored_date' => 'date',
+        'metadata_analyzed_at' => 'datetime',
     ];
 
     public function task(): BelongsTo

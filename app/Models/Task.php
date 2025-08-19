@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Task extends Model
 {
-    use GeneratesUuid, BindsOnUuid;
+    use BindsOnUuid, GeneratesUuid;
 
     protected $guarded = [];
 

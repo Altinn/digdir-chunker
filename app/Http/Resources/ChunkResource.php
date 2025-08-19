@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\ChunkType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,6 +23,10 @@ class ChunkResource extends JsonResource
              * @example "paragraph"
              */
             'chunk_type' => $this->chunk_type,
+            'file' => [
+                'url' => $this->file->url,
+                'metadata' => $this->file->metadata,
+            ],
             /**
              * @example "The sum of the squares of the two legs of a right triangle is equal to the square of the hypotenuse."
              */
@@ -37,7 +40,6 @@ class ChunkResource extends JsonResource
              */
             'chunk_number' => $this->chunk_number,
 
-            
             'derivatives' => ChunkDerivativeSearchResource::collection($this->derivatives) ?: [],
         ];
     }

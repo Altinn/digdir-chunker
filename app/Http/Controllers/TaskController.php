@@ -27,43 +27,47 @@ class TaskController extends Controller
         $validated = $request->validate([
             /**
              * The URL of the file to be processed.
-             * 
+             *
              * @var string
+             *
              * @example "https://example.com/file.pdf"
              */
-            "url" => "required|string",
+            'url' => 'required|string',
             /**
              * Which chunking method to use.
-             * 
+             *
              * @var string
+             *
              * @example "semantic"
              */
-            "chunking_method" => "nullable|string|in:semantic,recursive",
+            'chunking_method' => 'nullable|string|in:semantic,recursive',
             /**
              * The maximum size of each chunk in characters.
-             * 
+             *
              * @var int
+             *
              * @example 512
              */
-            "chunk_size" => "nullable|integer|min:1",
+            'chunk_size' => 'nullable|integer|min:1',
             /**
              * The overlap between chunks in characters (if using the recursive method).
-             * 
+             *
              * @var int
+             *
              * @example 512
-             */            
-            "chunk_overlap" => "nullable|integer|min:0",
+             */
+            'chunk_overlap' => 'nullable|integer|min:0',
             /**
              * Which conversion backend to use.
-             * 
+             *
              * @var string
+             *
              * @example "marker"
-             */ 
-            "conversion_backend" => "nullable|string|in:marker",
+             */
+            'conversion_backend' => 'nullable|string|in:marker',
         ]);
 
-        if ( ! isset($validated['url']) )
-        {
+        if (! isset($validated['url'])) {
             return response()->json([
                 'message' => 'Missing or invalid URL',
             ], 422);
@@ -99,15 +103,15 @@ class TaskController extends Controller
         $jobs = [
             new ConvertFileToMarkdown($file),
             new ChunkFile($file, $task->chunking_method, $task->chunk_size, $task->chunk_overlap),
-            
+
             new GenerateEmbeddings($file),
         ];
 
-        if ( config('app.enable_chunk_derivatives') ) {
+        if (config('app.enable_chunk_derivatives')) {
             $jobs[] = new GenerateChunkDerivatives($file);
         }
 
-        if ( config('app.enable_chunk_embeddings') ) {
+        if (config('app.enable_chunk_embeddings')) {
             $jobs[] = new GenerateEmbeddings($file);
         }
 
@@ -141,8 +145,7 @@ class TaskController extends Controller
 
     /**
      * Delete a task
-     * 
-     * @param \App\Models\Task $task
+     *
      * @return JsonResponse
      */
     public function delete(Task $task)

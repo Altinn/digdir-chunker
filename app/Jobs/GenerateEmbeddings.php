@@ -14,8 +14,7 @@ class GenerateEmbeddings implements ShouldQueue
 
     public function __construct(
         public File $file
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {
@@ -39,7 +38,7 @@ class GenerateEmbeddings implements ShouldQueue
         $response = Prism::embeddings()->using(Provider::{config('prism.embeddings_provider')}, config('prism.embeddings_model'))
             ->frominput($text)
             ->asEmbeddings();
-    
+
         return $response->embeddings[0]->embedding;
     }
 }

@@ -7,12 +7,11 @@ use App\Http\Resources\TaskResource;
 use App\Models\Chunk;
 use App\Models\File;
 use App\Models\Task;
-use PhpMcp\Server\Attributes\{McpResource};
-use PhpMcp\Server\Attributes\{McpResourceTemplate};
-use PhpMcp\Server\Attributes\{McpTool};
+use Illuminate\Http\Request;
+use PhpMcp\Server\Attributes\McpResource;
+use PhpMcp\Server\Attributes\McpTool;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
-use Illuminate\Http\Request;
 use Storage;
 
 class DocumentService
@@ -23,7 +22,7 @@ class DocumentService
     #[McpTool(name: 'import_document', description: 'Import a document from the provided URL. After calling this tool, you can use the `get_document_task_info` tool to check the status of the import task. Check the task status after 3 seconds.')]
     public function importDocument(string $url): TaskResource
     {
-        $controller = new TaskController();
+        $controller = new TaskController;
         $request = new Request(['url' => $url]);
 
         $response = $controller->create($request);
@@ -37,10 +36,10 @@ class DocumentService
     #[McpTool(name: 'get_document_task_info', description: 'Get information about a document processing task')]
     public function getDocumentTaskInfo(string $task_uuid): TaskResource|array
     {
-        $controller = new TaskController();
+        $controller = new TaskController;
         $task = Task::where('uuid', $task_uuid)->first();
 
-        if ( empty($task)) {
+        if (empty($task)) {
             return [
                 'uuid' => $task_uuid,
                 'error' => 'The specified task does not exist.',
@@ -84,9 +83,9 @@ class DocumentService
         $text = implode('', $chunks);
         $summary = Prism::text()
             ->using(Provider::Anthropic, 'claude-3-7-sonnet-latest')
-            ->withPrompt("Write a short and concise summary of the following text:\r\n\r\n" . $text)
+            ->withPrompt("Write a short and concise summary of the following text:\r\n\r\n".$text)
             ->asText()->text;
-        
+
         return [
             'uuid' => $file_uuid,
             'summary' => $summary,
@@ -103,7 +102,7 @@ class DocumentService
             ->get()
             ->first()
             ->markdown;
-        
+
         return [
             'uuid' => $file_uuid,
             'markdown' => $markdown ?: 'No markdown content available for this file.',
@@ -120,7 +119,8 @@ class DocumentService
     }
 
     #[McpResource(name: 'get_image', description: 'Get an image from the provided URL. This tool can be used to retrieve images stored in the application\'s storage, referenced from the document markdown or other sources.')]
-    public function getImage(string $url): array {
+    public function getImage(string $url): array
+    {
 
         $parsedUrl = parse_url($url);
         $path = isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
@@ -131,7 +131,7 @@ class DocumentService
         $data = Storage::get($remainingPath);
 
         return [
-            'image_html_tag' => '<img src="data:image/jpeg;base64,' . base64_encode($data) . '" />',
+            'image_html_tag' => '<img src="data:image/jpeg;base64,'.base64_encode($data).'" />',
         ];
     }
 }
