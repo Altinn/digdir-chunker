@@ -43,6 +43,7 @@ class Chunk extends Model
                 'type' => $this->file?->type,
                 'conerned_year' =>  $this->file?->concerned_year,
                 'source_document_url' =>  $this->file?->source_document_url,
+                'published_date' => $this->file?->published_date,
             ],
             'chunk_type' => $array['chunk_type'],
             'page_numbers' => (array) $array['page_numbers'],
