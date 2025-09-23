@@ -151,7 +151,7 @@ class DocumentService
         }
 
         // Apply limit (on chunks, not files)
-        $chunkLimit = max(1, min($limit ?? 20, 100)) * 20; // Get more chunks to ensure we have enough files
+        $chunkLimit = max(1, min($limit ?? 20, 100)) * 1000; // Get more chunks to ensure we have enough files
         
         Log::info("Executing search with query: '{$query}', chunk limit: {$chunkLimit}");
         $chunkResults = $searchBuilder->take($chunkLimit)->get();
@@ -161,7 +161,7 @@ class DocumentService
         
         Log::info("Search returned {$chunkResults->count()} chunks");
 
-        // Group chunks by file and construct file results
+        // Group chunks by file and collect unique page numbers and chunk IDs
         $fileGroups = [];
         foreach ($chunkResults as $chunk) {
             $fileId = $chunk->file_id;
@@ -169,16 +169,30 @@ class DocumentService
             if (!isset($fileGroups[$fileId])) {
                 $fileGroups[$fileId] = [
                     'file' => $chunk->file,
-                    'chunks' => []
+                    'page_numbers' => [],
+                    'chunk_ids' => [],
+                    'chunk_count' => 0
                 ];
             }
             
-            $fileGroups[$fileId]['chunks'][] = [
-                'id' => $chunk->id,
-                'chunk_number' => $chunk->chunk_number,
-                'page_numbers' => $chunk->page_numbers,
-                'chunk_type' => $chunk->chunk_type,
-            ];
+            // Collect page numbers from this chunk
+            if (is_array($chunk->page_numbers)) {
+                $fileGroups[$fileId]['page_numbers'] = array_merge(
+                    $fileGroups[$fileId]['page_numbers'], 
+                    $chunk->page_numbers
+                );
+            }
+            
+            // Collect chunk ID
+            $fileGroups[$fileId]['chunk_ids'][] = $chunk->id;
+            
+            $fileGroups[$fileId]['chunk_count']++;
+        }
+        
+        // Make page numbers unique and sorted for each file
+        foreach ($fileGroups as &$fileGroup) {
+            $fileGroup['page_numbers'] = array_values(array_unique($fileGroup['page_numbers']));
+            sort($fileGroup['page_numbers']);
         }
 
         // Convert to final result format and apply file limit
@@ -217,8 +231,9 @@ class DocumentService
                 'concerned_year' => $file->concerned_year,
                 'source_document_url' => $file->source_document_url,
                 'source_page_url' => $file->source_page_url,
-                'matching_chunks' => $fileGroup['chunks'],
-                'total_matching_chunks' => count($fileGroup['chunks']),
+                'matching_pages' => $fileGroup['page_numbers'],
+                'matching_chunk_ids' => $fileGroup['chunk_ids'],
+                'total_matching_chunks' => $fileGroup['chunk_count'],
             ];
             
             $fileCount++;
@@ -226,7 +241,7 @@ class DocumentService
 
         return [
             'query' => $query,
-            'available_filters' => $filterableAttributes,
+            'available_filters' => $this->getAvailableSearchFilters(),
             'available_sorting' => $sortableAttributes,
             'filters_applied' => $appliedFilters,
             'sort_by' => $sort_by,
@@ -235,6 +250,62 @@ class DocumentService
             'total_files' => count($files),
             'total_chunks_found' => $chunkResults->count(),
             'results' => $files,
+        ];
+    }
+
+    /**
+     * Get specific chunks by their IDs
+     */
+    #[McpTool(name: 'get_chunks', description: 'Get specific chunks by their IDs. Returns the full chunk data including text content.')]
+    public function getChunks(array $chunk_ids): array
+    {
+        // Validate input
+        if (empty($chunk_ids)) {
+            return [
+                'error' => 'No chunk IDs provided',
+                'chunks' => []
+            ];
+        }
+
+        // Limit the number of chunks that can be fetched at once
+        $maxChunks = 100;
+        if (count($chunk_ids) > $maxChunks) {
+            return [
+                'error' => "Too many chunk IDs requested. Maximum is {$maxChunks}",
+                'chunks' => []
+            ];
+        }
+
+        // Fetch chunks with their file relationships
+        $chunks = Chunk::whereIn('id', $chunk_ids)
+            ->with('file')
+            ->get();
+
+        // Format the response
+        $formattedChunks = [];
+        foreach ($chunks as $chunk) {
+            $formattedChunks[] = [
+                'id' => $chunk->id,
+                'file_id' => $chunk->file_id,
+                'file_uuid' => $chunk->file?->uuid,
+                'file_title' => $chunk->file?->title,
+                'chunk_number' => $chunk->chunk_number,
+                'chunk_type' => $chunk->chunk_type,
+                'page_numbers' => $chunk->page_numbers,
+                'text' => $chunk->text,
+                'created_at' => $chunk->created_at->toISOString(),
+            ];
+        }
+
+        // Find any requested IDs that weren't found
+        $foundIds = $chunks->pluck('id')->toArray();
+        $missingIds = array_diff($chunk_ids, $foundIds);
+
+        return [
+            'requested_count' => count($chunk_ids),
+            'found_count' => count($formattedChunks),
+            'missing_ids' => array_values($missingIds),
+            'chunks' => $formattedChunks
         ];
     }
 
@@ -255,14 +326,79 @@ class DocumentService
         ];
     }
 
-    #[McpResource(name: 'get_available_search_filters', description: 'Get the available search filters for the document search.')]
+    #[McpResource(name: 'get_available_search_filters', description: 'Get the available search filters for the document search, and their filterable values. Use this before performing a search with filters.')]
     public function getAvailableSearchFilters(): array
     {
         // Get filterable attributes from scout config
         $filterableAttributes = config('scout.meilisearch.index-settings.chunks.filterableAttributes', []);
 
+        $filtersWithValues = [];
+
+        foreach ($filterableAttributes as $attribute) {
+            $values = [];
+
+            // Map chunk search attributes to file table columns
+            $columnMapping = [
+                'file_type' => 'type',
+                'file_owners' => 'owners',
+                'file_publishers' => 'publishers', 
+                'file_recipients' => 'recipients',
+                'file_authoring_actors' => 'authoring_actors',
+                'file_concerned_year' => 'concerned_year',
+            ];
+
+            if (isset($columnMapping[$attribute])) {
+                $column = $columnMapping[$attribute];
+
+                if (in_array($column, ['owners', 'publishers', 'recipients', 'authoring_actors'])) {
+                    // Handle JSON array columns - get distinct values from all arrays
+                    $files = File::whereNotNull($column)->get();
+                    $allValues = [];
+                    
+                    foreach ($files as $file) {
+                        if (is_array($file->$column)) {
+                            $allValues = array_merge($allValues, $file->$column);
+                        }
+                    }
+                    
+                    $values = array_values(array_unique($allValues));
+                    sort($values);
+                    
+                } else {
+                    // Handle regular columns
+                    $values = File::whereNotNull($column)
+                        ->distinct()
+                        ->orderBy($column)
+                        ->pluck($column)
+                        ->filter() // Remove empty values
+                        ->values()
+                        ->toArray();
+                }
+            }
+
+            $filtersWithValues[$attribute] = [
+                'type' => $this->getFilterType($attribute),
+                'values' => $values
+            ];
+        }
+
         return [
-            'available_filters' => $filterableAttributes,
+            'available_filters' => $filtersWithValues,
         ];
+    }
+
+    private function getFilterType(string $attribute): string
+    {
+        // Determine the filter type based on the attribute
+        $arrayTypes = ['file_owners', 'file_publishers', 'file_recipients', 'file_authoring_actors'];
+        $numericTypes = ['file_concerned_year'];
+
+        if (in_array($attribute, $arrayTypes)) {
+            return 'array';
+        } elseif (in_array($attribute, $numericTypes)) {
+            return 'number';
+        } else {
+            return 'string';
+        }
     }
 }
