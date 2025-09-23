@@ -38,6 +38,34 @@ docker compose exec app php artisan queue:restart
 docker compose exec app php artisan list
 ```
 
+### Queue Configuration
+
+The service supports three separate queues with configurable worker counts:
+
+**Queue Types:**
+- `default` - Regular jobs (QUEUE_WORKERS, default: 1)
+- `long` - Long-running jobs with 1-hour timeout (QUEUE_LONG_WORKERS, default: 1)
+- `gpu` - GPU-intensive jobs with 2-hour timeout (QUEUE_GPU_WORKERS, default: 0)
+
+**Dispatching Jobs to Specific Queues:**
+```php
+// Dispatch to default queue
+MyJob::dispatch($data);
+
+// Dispatch to long-running queue
+MyJob::dispatch($data)->onQueue('long');
+
+// Dispatch to GPU queue
+MyJob::dispatch($data)->onQueue('gpu');
+```
+
+**Configuration in .env:**
+```env
+QUEUE_WORKERS=2        # Workers for default queue
+QUEUE_LONG_WORKERS=1   # Workers for long-running jobs
+QUEUE_GPU_WORKERS=1    # Workers for GPU jobs
+```
+
 ### Testing
 ```bash
 # Run tests with Pest
