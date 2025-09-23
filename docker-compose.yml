@@ -5,6 +5,9 @@ services:
       dockerfile: ./.docker/app/Dockerfile
     environment:
       - APP_ENV=${APP_ENV}
+      - QUEUE_WORKERS=${QUEUE_WORKERS:-1}
+      - QUEUE_LONG_WORKERS=${QUEUE_LONG_WORKERS:-1}
+      - QUEUE_GPU_WORKERS=${QUEUE_GPU_WORKERS:-0}
     container_name: digdir-chunker-app
     restart: unless-stopped
     user: www-data
