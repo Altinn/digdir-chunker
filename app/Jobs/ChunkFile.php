@@ -9,13 +9,14 @@ use App\Models\Chunk;
 use App\Models\File;
 use App\Services\ChunkerService;
 use Carbon\Carbon;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Log;
 
 class ChunkFile implements ShouldQueue
 {
-    use Queueable;
+    use Batchable, Queueable;
 
     protected File $file;
 
