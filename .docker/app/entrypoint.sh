@@ -31,6 +31,11 @@ if [ "$APP_ENV" = "production" ]; then
   OPCACHE_ENABLE=1
 fi
 
+# Set number of queue workers from environment variables
+LARAVEL_PROCS_NUMBER=${QUEUE_WORKERS:-1}
+LARAVEL_LONG_PROCS_NUMBER=${QUEUE_LONG_WORKERS:-1}
+LARAVEL_GPU_PROCS_NUMBER=${QUEUE_GPU_WORKERS:-0}
+
 # Write the opcache config
 echo "opcache.enable=${OPCACHE_ENABLE}" > /usr/local/etc/php/conf.d/opcache.ini
 
@@ -58,15 +63,35 @@ user=$USER_NAME
 stdout_logfile=/var/log/laravel_scheduler.out.log
 redirect_stderr=true
 
-[program:Laravel-worker]
+[program:Laravel-worker-default]
 process_name=%(program_name)s_%(process_num)02d
-command=php $ARTISAN_PATH queue:work --sleep=3 --tries=3
+command=php $ARTISAN_PATH queue:work --queue=default --sleep=3 --tries=3
 autostart=true
 autorestart=true
 numprocs=$LARAVEL_PROCS_NUMBER
 user=$USER_NAME
 redirect_stderr=true
-stdout_logfile=/var/log/laravel_worker.log
+stdout_logfile=/var/log/laravel_worker_default.log
+
+[program:Laravel-worker-long]
+process_name=%(program_name)s_%(process_num)02d
+command=php $ARTISAN_PATH queue:work --queue=long --sleep=3 --tries=3 --timeout=3600
+autostart=true
+autorestart=true
+numprocs=$LARAVEL_LONG_PROCS_NUMBER
+user=$USER_NAME
+redirect_stderr=true
+stdout_logfile=/var/log/laravel_worker_long.log
+
+[program:Laravel-worker-gpu]
+process_name=%(program_name)s_%(process_num)02d
+command=php $ARTISAN_PATH queue:work --queue=gpu --sleep=3 --tries=3 --timeout=7200
+autostart=true
+autorestart=true
+numprocs=$LARAVEL_GPU_PROCS_NUMBER
+user=$USER_NAME
+redirect_stderr=true
+stdout_logfile=/var/log/laravel_worker_gpu.log
 EOF
 
     info "Laravel supervisor config created at $SUPERVISOR_TASK"
