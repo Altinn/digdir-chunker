@@ -6,6 +6,7 @@ use App\Enums\TaskStatus;
 use App\Models\File;
 use Carbon\Carbon;
 use Http;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Log;
@@ -14,7 +15,7 @@ use Storage;
 
 class ConvertFileToMarkdown implements ShouldQueue
 {
-    use Queueable;
+    use Batchable, Queueable;
 
     public File $file;
 
