@@ -69,7 +69,7 @@ services:
       timeout: 20s
       retries: 3
   meilisearch:
-    image: 'getmeili/meilisearch:v1.15.1'
+    image: 'getmeili/meilisearch:v1.53.2'
     restart: unless-stopped
     environment:
       MEILI_MASTER_KEY: '${MEILISEARCH_MASTER_KEY}'
